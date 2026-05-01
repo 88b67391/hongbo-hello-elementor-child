@@ -1,0 +1,60 @@
+/**
+ * Breadcrumb — minimal text trail (Home > Parent > Current).
+ */
+
+.heb-breadcrumb {
+	font-size: 0.9375rem;
+	line-height: 1.5;
+	color: var(--heb-bc-current, #444444);
+}
+
+.heb-breadcrumb__list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	gap: 0;
+}
+
+.heb-breadcrumb__item {
+	display: inline-flex;
+	align-items: center;
+	margin: 0;
+	padding: 0;
+}
+
+.heb-breadcrumb__link {
+	color: var(--heb-bc-link, #1e3a7a);
+	text-decoration: none;
+	transition: opacity 0.15s ease, text-decoration 0.15s ease;
+}
+
+.heb-breadcrumb__link:hover,
+.heb-breadcrumb__link:focus-visible {
+	text-decoration: underline;
+	opacity: 0.9;
+	outline: none;
+}
+
+.heb-breadcrumb__sep {
+	color: var(--heb-bc-sep, #666666);
+	margin: 0 0.4em;
+	user-select: none;
+	font-weight: 400;
+}
+
+.heb-breadcrumb__current {
+	color: var(--heb-bc-current, #444444);
+	font-weight: 400;
+}
+
+.heb-breadcrumb__current-inner {
+	display: inline;
+}
+
+.heb-breadcrumb__placeholder {
+	color: #888;
+	font-style: italic;
+}

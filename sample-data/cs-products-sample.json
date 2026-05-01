@@ -1,0 +1,81 @@
+{
+  "_note": "Sample data for CPT slug `products` + ACF. product_images 需上传后自行在后台选图。",
+  "products": [
+    {
+      "title": "120D/2 Polyester Embroidery Thread — Semi-Dull",
+      "slug": "120d2-polyester-embroidery-thread-semi-dull",
+      "content": "<p>High-tenacity 120D/2 polyester embroidery thread for apparel, home textiles, and promotional embroidery. Stable dyeing, low thread breakage, suitable for high-speed machines.</p>",
+      "acf": {
+        "product_introduction": "OEM-ready 120D/2 two-ply polyester embroidery thread with semi-dull luster. Ideal for logos, monograms, and fashion embroidery on scarves and uniforms.",
+        "fob": 8.5,
+        "fiber_spec": "120D/2 (two-ply)",
+        "luster": "semi_dull",
+        "color": "Pantone custom / 500+ stock colors",
+        "package_weight": "1 kg cone (also 5 kg on request)",
+        "oemodm": "both",
+        "payment_terms": ["tt", "lc", "paypal"],
+        "moq": "500 kg per color",
+        "shipping": ["ocean", "air", "express"],
+        "faq_list": "Do you support custom colors?|Yes, lab-dip and bulk dyeing to your Pantone or physical sample.\nWhat is the lead time for bulk orders?|Typically 15–25 days after color approval, depending on quantity.\nCan we get samples before ordering?|Yes, sample cones or color cards can be arranged against freight or sample charge.",
+        "product_images": []
+      }
+    },
+    {
+      "title": "75D/2 Bright Trilobal Embroidery Thread",
+      "slug": "75d2-bright-trilobal-embroidery-thread",
+      "content": "<p>Trilobal cross-section for extra sheen and light reflection. Popular for decorative embroidery where a brighter, more lustrous look is required.</p>",
+      "acf": {
+        "product_introduction": "75D/2 bright trilobal polyester embroidery thread delivering a vivid, high-sheen finish for badges, caps, and premium garment decoration.",
+        "fob": 9.2,
+        "fiber_spec": "75D/2",
+        "luster": "super_bright",
+        "color": "Stock + custom dye",
+        "package_weight": "500 g / 1 kg cones",
+        "oemodm": "oem",
+        "payment_terms": ["tt", "lc"],
+        "moq": "300 kg per color",
+        "shipping": ["ocean", "express"],
+        "faq_list": "Is this thread suitable for metallic-effect designs?|It is polyester with high luster, not metallic; pair with metallic threads where needed.\nDo you provide Oeko-Tex certificates?|Certificates can be provided for qualifying bulk orders; ask sales for the latest scope.",
+        "product_images": []
+      }
+    },
+    {
+      "title": "150D/2 Full-Dull Embroidery Thread for Uniforms",
+      "slug": "150d2-full-dull-uniform-embroidery-thread",
+      "content": "<p>Full-dull finish reduces glare under workplace lighting. Widely used for corporate uniforms, workwear, and institutional textiles.</p>",
+      "acf": {
+        "product_introduction": "150D/2 full-dull polyester embroidery thread engineered for uniform programs requiring a soft, matte appearance and reliable color fastness.",
+        "fob": 7.9,
+        "fiber_spec": "150D/2",
+        "luster": "full_dull",
+        "color": "Navy, black, grey series + custom",
+        "package_weight": "1 kg cone",
+        "oemodm": "both",
+        "payment_terms": ["tt", "dp", "western_union"],
+        "moq": "1000 kg total (mixed colors negotiable)",
+        "shipping": ["ocean", "land"],
+        "faq_list": "What fastness grades do you target?|We target good wash and rub fastness; specific grades can be confirmed per color and substrate.\nCan you match our existing thread?|Send a physical sample or data sheet; we will match as closely as bulk dyeing allows.",
+        "product_images": []
+      }
+    },
+    {
+      "title": "108D/2 Recycled Polyester Embroidery Thread (GRS option)",
+      "slug": "108d2-recycled-polyester-embroidery-thread",
+      "content": "<p>Embroidery thread based on recycled polyester content where supply chain documentation is available. Suitable for brands with sustainability requirements.</p>",
+      "acf": {
+        "product_introduction": "108D/2 recycled-content polyester embroidery thread (GRS-aligned options on request) for eco-positioned apparel and accessories.",
+        "fob": 11.4,
+        "fiber_spec": "108D/2",
+        "luster": "semi_dull",
+        "color": "Core colors + custom (recycled chip dependent)",
+        "package_weight": "1 kg cone",
+        "oemodm": "odm",
+        "payment_terms": ["tt", "lc", "paypal"],
+        "moq": "800 kg per color",
+        "shipping": ["ocean", "air", "express"],
+        "faq_list": "What recycled content can you offer?|Typical offers are quoted per batch; certification scope varies—confirm with our team before order.\nIs pricing higher than virgin polyester?|Usually yes, due to chip cost and traceability; we quote case by case.",
+        "product_images": []
+      }
+    }
+  ]
+}

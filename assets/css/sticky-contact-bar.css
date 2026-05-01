@@ -1,0 +1,360 @@
+/**
+ * Sticky contact rail — PC: side tabs; mobile: optional bottom tab bar.
+ */
+
+/* Elementor 列/区块常设 overflow:hidden，会裁掉外弹与展开文字 */
+.elementor-widget-heb_sticky_contact_bar,
+.elementor-widget-heb_sticky_contact_bar .elementor-widget-container,
+.elementor-column:has(.heb-sticky-contact),
+.elementor-section:has(.heb-sticky-contact) {
+	overflow: visible !important;
+}
+
+.heb-sticky-contact {
+	/* 默认接近经典「贴边半圆 + 绿底白标」；自定义时在 Elementor 里覆盖 */
+	--heb-sc-bg: #25d366;
+	--heb-sc-fg: #ffffff;
+	--heb-sc-mobile-strip-bg: #16161a;
+	--heb-sc-radius: 48px;
+	--heb-sc-shadow: -4px 5px 18px rgba(0, 0, 0, 0.12);
+	--heb-sc-gap: 10px;
+	--heb-sc-icon: 22px;
+	position: fixed;
+	right: 0;
+	top: 0;
+	bottom: auto;
+	z-index: 99998;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: var(--heb-sc-gap);
+	pointer-events: none;
+	max-width: 100vw;
+	overflow: visible;
+}
+
+/* 配色预设：绿 / 蓝 用浅色晕（与参考图绿条、蓝条一致）；Custom 用上面中性阴影 */
+.heb-sticky-contact.heb-sticky-contact--scheme-green {
+	--heb-sc-shadow: -4px 5px 22px rgba(37, 211, 102, 0.3);
+}
+
+.heb-sticky-contact.heb-sticky-contact--scheme-blue {
+	--heb-sc-shadow: -4px 5px 22px rgba(37, 99, 235, 0.28);
+}
+
+.heb-sticky-contact.is-side-left {
+	left: 0;
+	right: auto;
+	align-items: flex-start;
+}
+
+.heb-sticky-contact__icon--el {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: inherit;
+	font-size: var(--heb-sc-icon);
+	line-height: 1;
+}
+
+.heb-sticky-contact__icon--el svg {
+	width: 1em;
+	height: 1em;
+}
+
+/* 内联 fill 的 SVG（如 WhatsApp）强制跟文字色，hover 保持 --heb-sc-fg */
+.heb-sticky-contact__item .heb-sticky-contact__icon svg,
+.heb-sticky-contact__item .heb-sticky-contact__icon svg *,
+.heb-sticky-contact__item .heb-sticky-contact__icon--el svg,
+.heb-sticky-contact__item .heb-sticky-contact__icon--el svg * {
+	fill: currentColor !important;
+}
+
+.heb-sticky-contact__item .heb-sticky-contact__icon svg [fill="none"],
+.heb-sticky-contact__item .heb-sticky-contact__icon svg *[fill="none"],
+.heb-sticky-contact__item .heb-sticky-contact__icon--el svg [fill="none"],
+.heb-sticky-contact__item .heb-sticky-contact__icon--el svg *[fill="none"] {
+	fill: none !important;
+}
+
+.heb-sticky-contact__item .heb-sticky-contact__icon svg [stroke]:not([stroke="none"]),
+.heb-sticky-contact__item .heb-sticky-contact__icon svg *[stroke]:not([stroke="none"]) {
+	stroke: currentColor !important;
+}
+
+.heb-sticky-contact.is-side-left .heb-sticky-contact__item {
+	flex-direction: row;
+	border-radius: 0 var(--heb-sc-radius) var(--heb-sc-radius) 0;
+	box-shadow: 4px 5px 18px rgba(0, 0, 0, 0.12);
+}
+
+.heb-sticky-contact.is-side-left.heb-sticky-contact--scheme-green .heb-sticky-contact__item {
+	box-shadow: 4px 5px 22px rgba(37, 211, 102, 0.3);
+}
+
+.heb-sticky-contact.is-side-left.heb-sticky-contact--scheme-blue .heb-sticky-contact__item {
+	box-shadow: 4px 5px 22px rgba(37, 99, 235, 0.28);
+}
+
+.heb-sticky-contact.is-valign-center {
+	top: 50%;
+	transform: translateY(-50%);
+}
+
+.heb-sticky-contact.is-valign-top {
+	top: var(--heb-sc-offset-y, 120px);
+	transform: none;
+}
+
+.heb-sticky-contact.is-valign-bottom {
+	bottom: var(--heb-sc-offset-y, 32px);
+	top: auto;
+	transform: none;
+}
+
+.heb-sticky-contact__item {
+	pointer-events: auto;
+	display: inline-flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: flex-end;
+	/* 收起时标签 max-width:0 仍占 flex 最小内容宽；必须 min-width:0 才能收成「半圆小耳朵」 */
+	gap: 8px;
+	min-height: 48px;
+	min-width: 0;
+	/* 右贴边：右侧略窄，左侧略宽，成半圆胶囊 */
+	padding: 10px 8px 10px 14px;
+	background: var(--heb-sc-bg);
+	color: var(--heb-sc-fg);
+	text-decoration: none;
+	border-radius: var(--heb-sc-radius) 0 0 var(--heb-sc-radius);
+	box-shadow: var(--heb-sc-shadow);
+	position: relative;
+	z-index: 1;
+	overflow: visible;
+	transition:
+		background-color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+		color 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+		box-shadow 0.32s cubic-bezier(0.25, 0.8, 0.25, 1),
+		padding 0.32s cubic-bezier(0.25, 0.8, 0.25, 1),
+		gap 0.32s cubic-bezier(0.25, 0.8, 0.25, 1),
+		filter 0.25s ease;
+}
+
+.heb-sticky-contact.is-side-left .heb-sticky-contact__item {
+	padding: 10px 14px 10px 8px;
+	border-radius: 0 var(--heb-sc-radius) var(--heb-sc-radius) 0;
+}
+
+.heb-sticky-contact__item:hover,
+.heb-sticky-contact__item:focus-visible {
+	outline: none;
+}
+
+/*
+ * 桌面（≥768）侧栏：hover 展开文字 + 外弹。
+ * 重要：开启「移动端底栏」时根节点仍带 .heb-sticky-contact--mobile-bottom，
+ * 小屏由下方 @media (max-width:767px) 覆盖；若这里写 :not(.heb-sticky-contact--mobile-bottom)，
+ * PC 上整条规则会永远不命中，hover 无文字、无位移。
+ */
+@media (min-width: 768px) {
+	/*
+	 * Hover 与参考图一致：右边缘贴屏不动，整片绿条只向左侧「长出」。
+	 * 不要用整条 translateX，否则图标会离开右缘，和贴边胶囊观感不同。
+	 */
+	.heb-sticky-contact .heb-sticky-contact__item:hover,
+	.heb-sticky-contact .heb-sticky-contact__item:focus-visible {
+		color: var(--heb-sc-fg);
+		gap: 10px;
+		z-index: 3;
+		/* 禁止主题/Elementor 动效再给整条加位移，避免和「贴边长出」冲突 */
+		transform: none !important;
+	}
+
+	.heb-sticky-contact .heb-sticky-contact__item:hover .heb-sticky-contact__label,
+	.heb-sticky-contact .heb-sticky-contact__item:focus-visible .heb-sticky-contact__label {
+		color: var(--heb-sc-fg);
+		max-width: min(280px, 55vw);
+		opacity: 1;
+		margin-inline-end: 2px;
+		transition-delay: 0s, 0.05s, 0s;
+	}
+
+	.heb-sticky-contact:not(.is-side-left) .heb-sticky-contact__item:hover,
+	.heb-sticky-contact:not(.is-side-left) .heb-sticky-contact__item:focus-visible {
+		padding-left: 20px;
+		padding-right: 8px;
+		box-shadow: var(--heb-sc-shadow);
+	}
+
+	.heb-sticky-contact.is-side-left .heb-sticky-contact__item:hover,
+	.heb-sticky-contact.is-side-left .heb-sticky-contact__item:focus-visible {
+		padding-right: 20px;
+		padding-left: 8px;
+		box-shadow: var(--heb-sc-shadow);
+	}
+
+	/* 预设配色：hover 叠浅白（不用整卡 filter） */
+	.heb-sticky-contact--scheme-green .heb-sticky-contact__item:hover,
+	.heb-sticky-contact--scheme-green .heb-sticky-contact__item:focus-visible {
+		background-image: linear-gradient(rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.12));
+	}
+
+	.heb-sticky-contact--scheme-blue .heb-sticky-contact__item:hover,
+	.heb-sticky-contact--scheme-blue .heb-sticky-contact__item:focus-visible {
+		background-image: linear-gradient(rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.1));
+	}
+
+	/* 始终展开 / 触控二次展开 */
+	.heb-sticky-contact .heb-sticky-contact__item.is-always-expanded {
+		gap: 10px;
+	}
+
+	.heb-sticky-contact .heb-sticky-contact__item.is-always-expanded .heb-sticky-contact__label {
+		max-width: min(280px, 55vw);
+		opacity: 1;
+		margin-inline-end: 2px;
+	}
+
+	.heb-sticky-contact .heb-sticky-contact__item.is-touch-open {
+		gap: 10px;
+	}
+
+	.heb-sticky-contact .heb-sticky-contact__item.is-touch-open .heb-sticky-contact__label {
+		max-width: min(280px, 55vw);
+		opacity: 1;
+		margin-inline-end: 2px;
+	}
+}
+
+.heb-sticky-contact__icon {
+	flex: 0 0 var(--heb-sc-icon);
+	width: var(--heb-sc-icon);
+	height: var(--heb-sc-icon);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	/* 避免个别 SVG / 子元素不继承 a 的 color（如 WhatsApp 发黑） */
+	color: var(--heb-sc-fg);
+}
+
+.heb-sticky-contact__icon svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+.heb-sticky-contact__label {
+	flex: 0 1 auto;
+	min-width: 0;
+	max-width: 0;
+	font-weight: 700;
+	font-size: 15px;
+	line-height: 1.2;
+	letter-spacing: 0.02em;
+	white-space: nowrap;
+	overflow: hidden;
+	opacity: 0;
+	transition:
+		max-width 0.32s cubic-bezier(0.25, 0.8, 0.25, 1),
+		opacity 0.22s ease-out,
+		margin 0.32s cubic-bezier(0.25, 0.8, 0.25, 1);
+	margin-inline-end: 0;
+}
+
+.heb-sticky-contact__empty {
+	margin: 0;
+	padding: 12px 16px;
+	font-size: 13px;
+	color: #666;
+	border: 1px dashed #ccc;
+	border-radius: 4px;
+}
+
+/* -------------------------------------------------------------------------
+   Mobile bottom tab bar (≤767px)
+   ------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+	.heb-sticky-contact--mobile-bottom.heb-sticky-contact {
+		left: 0;
+		right: 0;
+		top: auto;
+		bottom: 0;
+		transform: none;
+		flex-direction: row;
+		align-items: stretch;
+		justify-content: space-around;
+		gap: 0;
+		max-width: none;
+		padding: 6px 4px max(6px, env(safe-area-inset-bottom, 0px));
+		pointer-events: none;
+		border-top: 1px solid rgba(255, 255, 255, 0.08);
+		background-color: var(--heb-sc-mobile-strip-bg, #16161a);
+	}
+
+	.heb-sticky-contact--mobile-bottom.heb-sticky-contact--mobile-segments {
+		background: transparent;
+		border-top: none;
+		gap: 6px;
+		padding: 8px 8px max(8px, env(safe-area-inset-bottom, 0px));
+	}
+
+	.heb-sticky-contact--mobile-bottom .heb-sticky-contact__item {
+		flex: 1 1 0;
+		flex-direction: column-reverse;
+		align-items: center;
+		justify-content: center;
+		min-width: 0;
+		min-height: 52px;
+		padding: 6px 4px;
+		border-radius: 0;
+		box-shadow: none;
+		gap: 4px;
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.heb-sticky-contact--mobile-bottom.heb-sticky-contact--mobile-dark .heb-sticky-contact__item {
+		background: transparent;
+		color: rgba(255, 255, 255, 0.92);
+	}
+
+	.heb-sticky-contact--mobile-bottom.heb-sticky-contact--mobile-dark .heb-sticky-contact__item:active {
+		opacity: 0.88;
+	}
+
+	.heb-sticky-contact--mobile-bottom.heb-sticky-contact--mobile-segments .heb-sticky-contact__item {
+		border-radius: 10px;
+		box-shadow: var(--heb-sc-shadow);
+	}
+
+	.heb-sticky-contact--mobile-bottom .heb-sticky-contact__icon {
+		flex: 0 0 auto;
+		width: 22px;
+		height: 22px;
+	}
+
+	.heb-sticky-contact--mobile-bottom .heb-sticky-contact__icon--el {
+		font-size: 22px;
+	}
+
+	.heb-sticky-contact--mobile-bottom .heb-sticky-contact__label {
+		display: block;
+		max-width: 100% !important;
+		width: 100%;
+		opacity: 1 !important;
+		margin: 0 !important;
+		padding: 0 2px;
+		font-size: 11px;
+		font-weight: 600;
+		line-height: 1.2;
+		text-align: center;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	/* Avoid page content hidden under bar */
+	body:has(.heb-sticky-contact--mobile-bottom) {
+		padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+	}
+}

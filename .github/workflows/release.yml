@@ -1,0 +1,57 @@
+name: Release Theme
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate style.css version matches tag
+        id: vcheck
+        run: |
+          set -e
+          TAG="${GITHUB_REF#refs/tags/v}"
+          THEME=$(grep -E '^[[:space:]]*Version:' style.css | head -1 | sed -E 's/^[[:space:]]*Version:[[:space:]]*//' | tr -d '[:space:]')
+          echo "Tag: $TAG"
+          echo "Theme header: $THEME"
+          if [ "$TAG" != "$THEME" ]; then
+            echo "::error title=Version mismatch::Tag v$TAG does not match style.css version $THEME"
+            exit 1
+          fi
+          echo "version=$THEME" >> "$GITHUB_OUTPUT"
+
+      - name: Build zip
+        run: |
+          set -e
+          STAGE="$(mktemp -d)/hello-elementor-child"
+          mkdir -p "$STAGE"
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='node_modules' \
+            --exclude='.idea' \
+            --exclude='.vscode' \
+            --exclude='.DS_Store' \
+            --exclude='*.zip' \
+            ./ "$STAGE/"
+          mkdir -p build
+          (cd "$(dirname "$STAGE")" && zip -rq "$GITHUB_WORKSPACE/build/hello-elementor-child.zip" "hello-elementor-child")
+          ls -lh build/hello-elementor-child.zip
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: v${{ steps.vcheck.outputs.version }}
+          tag_name: ${{ github.ref_name }}
+          files: build/hello-elementor-child.zip
+          generate_release_notes: true
+          fail_on_unmatched_files: true

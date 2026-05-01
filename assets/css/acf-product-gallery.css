@@ -1,0 +1,77 @@
+/* ACF Product Gallery widget — main + thumbnails */
+
+.heb-acf-gallery {
+	--heb-gallery-gap: 12px;
+	--heb-gallery-radius: 4px;
+	--heb-gallery-active: #1e3a5f;
+	max-width: 100%;
+}
+
+.heb-acf-gallery__stage {
+	position: relative;
+	aspect-ratio: 1 / 1;
+	max-height: min(85vw, 640px);
+	margin: 0 auto;
+	background: #f6f6f6;
+	border-radius: var(--heb-gallery-radius);
+	overflow: hidden;
+}
+
+.heb-acf-gallery__main {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	object-position: center;
+}
+
+.heb-acf-gallery__thumbs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--heb-gallery-gap);
+	margin-top: var(--heb-gallery-gap);
+	justify-content: flex-start;
+}
+
+.heb-acf-gallery__thumb {
+	flex: 0 0 auto;
+	width: 72px;
+	height: 72px;
+	padding: 0;
+	border: 2px solid transparent;
+	border-radius: var(--heb-gallery-radius);
+	background: #fff;
+	cursor: pointer;
+	overflow: hidden;
+	transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.heb-acf-gallery__thumb:hover {
+	border-color: rgba(30, 58, 95, 0.35);
+}
+
+.heb-acf-gallery__thumb.is-active {
+	border-color: var(--heb-gallery-active);
+	box-shadow: 0 0 0 1px var(--heb-gallery-active);
+}
+
+.heb-acf-gallery__thumb img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.heb-acf-gallery__thumb:focus-visible {
+	outline: 2px solid var(--heb-gallery-active);
+	outline-offset: 2px;
+}
+
+.heb-acf-gallery__empty {
+	padding: 24px;
+	text-align: center;
+	color: #666;
+	font-size: 14px;
+	border: 1px dashed #ccc;
+	border-radius: var(--heb-gallery-radius);
+}

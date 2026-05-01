@@ -1,0 +1,15 @@
+/*
+	Theme Name: Hello Elementor Child
+	Theme URI: https://elementor.com/hello-theme/
+	Description: Hello Elementor 的子主题，用于安全地覆盖样式与 PHP，父主题更新时不会丢失自定义内容。
+	Author: 
+	Template: hello-elementor
+	Version: 1.0.0
+	Requires at least: 6.0
+	Requires PHP: 7.4
+	License: GNU General Public License v3 or later
+	License URI: https://www.gnu.org/licenses/gpl-3.0.html
+	Text Domain: hello-elementor-child
+*/
+
+/* 在此添加自定义 CSS，或通过外观 → 自定义 → 额外 CSS */

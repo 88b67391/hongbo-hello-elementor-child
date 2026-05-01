@@ -1,0 +1,189 @@
+<?php
+/**
+ * Hello Elementor Child — functions and definitions
+ *
+ * @package HelloElementorChild
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+require_once get_stylesheet_directory() . '/inc/import-cs-products.php';
+require_once get_stylesheet_directory() . '/inc/disable-elementor-updates.php';
+require_once get_stylesheet_directory() . '/inc/class-theme-updater.php';
+if ( is_admin() ) {
+	require_once get_stylesheet_directory() . '/inc/admin-seed-products.php';
+}
+Hello_Elementor_Child_Theme_Updater::instance();
+
+/**
+ * 加载子主题样式表（在父主题 theme.css 之后，保证可覆盖）。
+ */
+function hello_elementor_child_enqueue_styles() {
+	wp_enqueue_style(
+		'hello-elementor-child',
+		get_stylesheet_directory_uri() . '/style.css',
+		[ 'hello-elementor-theme-style' ],
+		wp_get_theme()->get( 'Version' )
+	);
+}
+add_action( 'wp_enqueue_scripts', 'hello_elementor_child_enqueue_styles', 20 );
+
+/**
+ * Register assets for custom Elementor widgets (gallery + sticky contact bar).
+ */
+function hello_elementor_child_register_elementor_widget_assets() {
+	$base_dir = get_stylesheet_directory();
+	$base_uri = get_stylesheet_directory_uri();
+
+	$css_path = $base_dir . '/assets/css/acf-product-gallery.css';
+	$js_path  = $base_dir . '/assets/js/acf-product-gallery.js';
+	$css_ver  = file_exists( $css_path ) ? (string) filemtime( $css_path ) : null;
+	$js_ver   = file_exists( $js_path ) ? (string) filemtime( $js_path ) : null;
+
+	wp_register_style( 'heb-acf-product-gallery', $base_uri . '/assets/css/acf-product-gallery.css', [], $css_ver );
+	wp_register_script( 'heb-acf-product-gallery', $base_uri . '/assets/js/acf-product-gallery.js', [], $js_ver, true );
+
+	$sc_css = $base_dir . '/assets/css/sticky-contact-bar.css';
+	$sc_js  = $base_dir . '/assets/js/sticky-contact-bar.js';
+	wp_register_style( 'heb-sticky-contact-bar', $base_uri . '/assets/css/sticky-contact-bar.css', [], file_exists( $sc_css ) ? (string) filemtime( $sc_css ) : null );
+	wp_register_script( 'heb-sticky-contact-bar', $base_uri . '/assets/js/sticky-contact-bar.js', [], file_exists( $sc_js ) ? (string) filemtime( $sc_js ) : null, true );
+
+	$faq_css = $base_dir . '/assets/css/acf-faq.css';
+	wp_register_style( 'heb-acf-faq', $base_uri . '/assets/css/acf-faq.css', [], file_exists( $faq_css ) ? (string) filemtime( $faq_css ) : null );
+
+	$bc_css = $base_dir . '/assets/css/breadcrumbs.css';
+	wp_register_style( 'heb-breadcrumbs', $base_uri . '/assets/css/breadcrumbs.css', [], file_exists( $bc_css ) ? (string) filemtime( $bc_css ) : null );
+
+	$cw_css = $base_dir . '/assets/css/content-widgets.css';
+	wp_register_style( 'heb-content-widgets', $base_uri . '/assets/css/content-widgets.css', [], file_exists( $cw_css ) ? (string) filemtime( $cw_css ) : null );
+
+	$cf_css = $base_dir . '/assets/css/acf-company-feedback.css';
+	wp_register_style( 'heb-acf-company-feedback', $base_uri . '/assets/css/acf-company-feedback.css', [], file_exists( $cf_css ) ? (string) filemtime( $cf_css ) : null );
+}
+add_action( 'wp_enqueue_scripts', 'hello_elementor_child_register_elementor_widget_assets', 15 );
+
+/**
+ * Register a dedicated Elementor category so widgets are easy to find (not only under “General / 常规”).
+ */
+function hello_elementor_child_register_elementor_category() {
+	if ( ! class_exists( '\Elementor\Plugin' ) ) {
+		return;
+	}
+	$em = \Elementor\Plugin::instance()->elements_manager;
+	if ( ! $em || ! method_exists( $em, 'add_category' ) ) {
+		return;
+	}
+	$em->add_category(
+		'heb-child',
+		[
+			'title' => esc_html__( 'Hello Child · 子主题', 'hello-elementor-child' ),
+			'icon'  => 'eicon-plug',
+		],
+		1
+	);
+}
+add_action( 'elementor/init', 'hello_elementor_child_register_elementor_category', 5 );
+
+/**
+ * Load widget class files once.
+ */
+function hello_elementor_child_load_elementor_widget_classes() {
+	static $loaded = false;
+	if ( $loaded ) {
+		return;
+	}
+	$loaded = true;
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-acf-product-gallery.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-sticky-contact-bar.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-acf-faq.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-breadcrumbs.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-feature-value-grid.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-certification-grid.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-vertical-timeline.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-acf-company-intro.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-acf-customer-feedback.php';
+}
+
+/**
+ * Register custom Elementor widgets (Elementor 3.5+).
+ *
+ * @param \Elementor\Widgets_Manager $widgets_manager Widgets manager instance.
+ */
+function hello_elementor_child_register_elementor_widgets( $widgets_manager ) {
+	hello_elementor_child_load_elementor_widget_classes();
+	if ( method_exists( $widgets_manager, 'register' ) ) {
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_ACF_Product_Gallery() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_Sticky_Contact_Bar() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_ACF_FAQ() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_Breadcrumbs() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_Feature_Value_Grid() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_Certification_Grid() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_Vertical_Timeline() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_ACF_Company_Intro() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_ACF_Customer_Feedback() );
+	}
+}
+add_action( 'elementor/widgets/register', 'hello_elementor_child_register_elementor_widgets' );
+
+/**
+ * Older Elementor: register_widget_type when ->register() does not exist.
+ */
+function hello_elementor_child_register_elementor_widgets_legacy() {
+	if ( ! class_exists( '\Elementor\Plugin' ) ) {
+		return;
+	}
+	$wm = \Elementor\Plugin::instance()->widgets_manager;
+	if ( method_exists( $wm, 'register' ) ) {
+		return;
+	}
+	if ( ! method_exists( $wm, 'register_widget_type' ) ) {
+		return;
+	}
+	if ( $wm->get_widget_types( 'heb_acf_product_gallery' ) ) {
+		return;
+	}
+	hello_elementor_child_load_elementor_widget_classes();
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_ACF_Product_Gallery() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_Sticky_Contact_Bar() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_ACF_FAQ() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_Breadcrumbs() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_Feature_Value_Grid() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_Certification_Grid() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_Vertical_Timeline() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_ACF_Company_Intro() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_ACF_Customer_Feedback() );
+}
+add_action( 'elementor/widgets/widgets_registered', 'hello_elementor_child_register_elementor_widgets_legacy', 20 );
+
+/**
+ * Parse ACF FAQ textarea (field `faq_list`): each line is "Question|Answer".
+ *
+ * @param string $raw Raw field value.
+ * @return array<int, array{question: string, answer: string}>
+ */
+function hello_elementor_child_parse_faq_list( $raw ) {
+	$out = [];
+	if ( ! is_string( $raw ) || '' === trim( $raw ) ) {
+		return $out;
+	}
+	$lines = preg_split( '/\r\n|\r|\n/', $raw );
+	foreach ( $lines as $line ) {
+		$line = trim( $line );
+		if ( '' === $line ) {
+			continue;
+		}
+		$parts = explode( '|', $line, 2 );
+		$q     = isset( $parts[0] ) ? trim( $parts[0] ) : '';
+		$a     = isset( $parts[1] ) ? trim( $parts[1] ) : '';
+		if ( '' === $q && '' === $a ) {
+			continue;
+		}
+		$out[] = [
+			'question' => $q,
+			'answer'   => $a,
+		];
+	}
+	return $out;
+}
