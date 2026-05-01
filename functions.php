@@ -413,12 +413,16 @@ function hello_elementor_child_lang_switcher_shortcode( $atts = [] ) {
 		'ar' => 'Arabic',
 	];
 
-	$cls = 'heb-lang-switcher';
+	$cls = 'heb-lang-switcher heb-lang-switcher--custom';
 	if ( is_string( $atts['class'] ) && '' !== trim( $atts['class'] ) ) {
 		$cls .= ' ' . sanitize_html_class( trim( $atts['class'] ) );
 	}
 
-	$html = '<nav class="' . esc_attr( $cls ) . '" aria-label="Language switcher"><ul class="heb-lang-switcher__list">';
+	$current_label = isset( $labels[ $current_lang ] ) ? $labels[ $current_lang ] : strtoupper( $current_lang );
+	$html          = '<nav class="' . esc_attr( $cls ) . '" aria-label="Language switcher">';
+	$html         .= '<details class="heb-lang-switcher__details">';
+	$html         .= '<summary class="heb-lang-switcher__trigger"><span>' . esc_html( $current_label ) . '</span></summary>';
+	$html         .= '<ul class="heb-lang-switcher__menu">';
 	foreach ( $links as $lang => $url ) {
 		$lang = sanitize_key( (string) $lang );
 		$url  = esc_url( (string) $url );
@@ -427,12 +431,12 @@ function hello_elementor_child_lang_switcher_shortcode( $atts = [] ) {
 		}
 		$label = isset( $labels[ $lang ] ) ? $labels[ $lang ] : strtoupper( $lang );
 		if ( $lang === $current_lang ) {
-			$html .= '<li class="heb-lang-switcher__item is-current"><span>' . esc_html( $label ) . '</span></li>';
+			$html .= '<li class="is-current"><span>' . esc_html( $label ) . '</span></li>';
 		} else {
-			$html .= '<li class="heb-lang-switcher__item"><a href="' . $url . '">' . esc_html( $label ) . '</a></li>';
+			$html .= '<li><a href="' . $url . '">' . esc_html( $label ) . '</a></li>';
 		}
 	}
-	$html .= '</ul></nav>';
+	$html .= '</ul></details></nav>';
 	return $html;
 }
 add_shortcode( 'heb_lang_switcher', 'hello_elementor_child_lang_switcher_shortcode' );
