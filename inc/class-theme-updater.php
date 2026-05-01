@@ -30,6 +30,25 @@ class Hello_Elementor_Child_Theme_Updater {
 		add_filter( 'pre_set_site_transient_update_themes', [ $this, 'inject_update' ] );
 		add_filter( 'site_transient_update_themes', [ $this, 'inject_update' ] );
 		add_filter( 'upgrader_pre_download', [ $this, 'authenticate_download' ], 10, 3 );
+		add_action( 'load-themes.php', [ $this, 'force_check_on_themes_screen' ] );
+	}
+
+	/**
+	 * 在主题页强制刷新一次 update_themes，避免站点长期命中旧缓存导致不显示更新。
+	 */
+	public function force_check_on_themes_screen() {
+		if ( ! current_user_can( 'update_themes' ) ) {
+			return;
+		}
+		$flag = 'hello_child_forced_theme_check';
+		if ( isset( $_GET[ $flag ] ) ) {
+			return;
+		}
+		delete_site_transient( 'update_themes' );
+		if ( ! function_exists( 'wp_update_themes' ) ) {
+			require_once ABSPATH . 'wp-includes/update.php';
+		}
+		wp_update_themes();
 	}
 
 	/**
