@@ -375,3 +375,64 @@ function hello_elementor_child_append_language_switcher_to_menu( $items, $args )
 	return $items . $out;
 }
 add_filter( 'wp_nav_menu_items', 'hello_elementor_child_append_language_switcher_to_menu', 20, 2 );
+
+/**
+ * Shortcode: [heb_lang_switcher]
+ * 可在 Elementor 的 Shortcode 组件中直接使用。
+ *
+ * @param array<string,string> $atts Shortcode attributes.
+ * @return string
+ */
+function hello_elementor_child_lang_switcher_shortcode( $atts = [] ) {
+	$atts = shortcode_atts(
+		[
+			'class' => '',
+		],
+		(array) $atts,
+		'heb_lang_switcher'
+	);
+
+	$links = hello_elementor_child_build_switcher_links();
+	if ( empty( $links ) ) {
+		return '';
+	}
+
+	$host         = wp_parse_url( home_url(), PHP_URL_HOST );
+	$current_lang = 'en';
+	if ( is_string( $host ) && preg_match( '/^([a-z]{2})\./i', $host, $m ) ) {
+		$current_lang = sanitize_key( strtolower( (string) $m[1] ) );
+	}
+
+	$labels = [
+		'en' => 'English',
+		'ja' => 'Japanese',
+		'fr' => 'French',
+		'vi' => 'Vietnamese',
+		'ko' => 'Korean',
+		'ru' => 'Russian',
+		'ar' => 'Arabic',
+	];
+
+	$cls = 'heb-lang-switcher';
+	if ( is_string( $atts['class'] ) && '' !== trim( $atts['class'] ) ) {
+		$cls .= ' ' . sanitize_html_class( trim( $atts['class'] ) );
+	}
+
+	$html = '<nav class="' . esc_attr( $cls ) . '" aria-label="Language switcher"><ul class="heb-lang-switcher__list">';
+	foreach ( $links as $lang => $url ) {
+		$lang = sanitize_key( (string) $lang );
+		$url  = esc_url( (string) $url );
+		if ( '' === $lang || '' === $url ) {
+			continue;
+		}
+		$label = isset( $labels[ $lang ] ) ? $labels[ $lang ] : strtoupper( $lang );
+		if ( $lang === $current_lang ) {
+			$html .= '<li class="heb-lang-switcher__item is-current"><span>' . esc_html( $label ) . '</span></li>';
+		} else {
+			$html .= '<li class="heb-lang-switcher__item"><a href="' . $url . '">' . esc_html( $label ) . '</a></li>';
+		}
+	}
+	$html .= '</ul></nav>';
+	return $html;
+}
+add_shortcode( 'heb_lang_switcher', 'hello_elementor_child_lang_switcher_shortcode' );
