@@ -90,14 +90,32 @@ class Hello_Elementor_Child_Theme_Updater {
 			'https://api.github.com/repos/' . $repo . '/releases/latest',
 			[ 'timeout' => 15, 'headers' => $headers ]
 		);
-		if ( is_wp_error( $response ) ) {
-			return null;
-		}
-		if ( 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			// 回退：某些私库场景 release 不可用时，用最新 tag 兜底。
+			$tag = $this->get_latest_tag( $repo, $headers );
+			if ( '' !== $tag ) {
+				$info = [
+					'version'  => ltrim( $tag, 'vV' ),
+					'zip_url'  => 'https://api.github.com/repos/' . $repo . '/zipball/' . rawurlencode( $tag ),
+					'homepage' => 'https://github.com/' . $repo . '/releases/tag/' . rawurlencode( $tag ),
+				];
+				set_transient( self::TRANSIENT_KEY, $info, 12 * HOUR_IN_SECONDS );
+				return $info;
+			}
 			return null;
 		}
 		$json = json_decode( (string) wp_remote_retrieve_body( $response ), true );
 		if ( ! is_array( $json ) || empty( $json['tag_name'] ) ) {
+			$tag = $this->get_latest_tag( $repo, $headers );
+			if ( '' !== $tag ) {
+				$info = [
+					'version'  => ltrim( $tag, 'vV' ),
+					'zip_url'  => 'https://api.github.com/repos/' . $repo . '/zipball/' . rawurlencode( $tag ),
+					'homepage' => 'https://github.com/' . $repo . '/releases/tag/' . rawurlencode( $tag ),
+				];
+				set_transient( self::TRANSIENT_KEY, $info, 12 * HOUR_IN_SECONDS );
+				return $info;
+			}
 			return null;
 		}
 
@@ -127,6 +145,28 @@ class Hello_Elementor_Child_Theme_Updater {
 		];
 		set_transient( self::TRANSIENT_KEY, $info, 12 * HOUR_IN_SECONDS );
 		return $info;
+	}
+
+	/**
+	 * 获取最新 tag（release 不可用时兜底）。
+	 *
+	 * @param string               $repo    owner/repo.
+	 * @param array<string,string> $headers Request headers.
+	 * @return string
+	 */
+	private function get_latest_tag( $repo, array $headers ) {
+		$response = wp_remote_get(
+			'https://api.github.com/repos/' . $repo . '/tags?per_page=1',
+			[ 'timeout' => 15, 'headers' => $headers ]
+		);
+		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			return '';
+		}
+		$tags = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+		if ( ! is_array( $tags ) || empty( $tags[0]['name'] ) || ! is_string( $tags[0]['name'] ) ) {
+			return '';
+		}
+		return trim( $tags[0]['name'] );
 	}
 
 	/**
