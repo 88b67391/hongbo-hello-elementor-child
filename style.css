@@ -4,7 +4,7 @@
 	Description: Hello Elementor 的子主题，用于安全地覆盖样式与 PHP，父主题更新时不会丢失自定义内容。
 	Author: 
 	Template: hello-elementor
-	Version: 1.0.10
+	Version: 1.1.0
 	Requires at least: 6.0
 	Requires PHP: 7.4
 	License: GNU General Public License v3 or later
@@ -13,3 +13,35 @@
 */
 
 /* 在此添加自定义 CSS，或通过外观 → 自定义 → 额外 CSS */
+
+/* Language switcher (heb-product-publisher map based) */
+.heb-lang-switcher {
+	margin: 12px 0;
+}
+.heb-lang-switcher__list {
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+}
+.heb-lang-switcher__item a,
+.heb-lang-switcher__item span {
+	display: inline-block;
+	padding: 5px 10px;
+	border: 1px solid #d0d7de;
+	border-radius: 999px;
+	font-size: 12px;
+	line-height: 1;
+	text-decoration: none;
+}
+.heb-lang-switcher__item a:hover {
+	border-color: #2271b1;
+	color: #2271b1;
+}
+.heb-lang-switcher__item.is-current span {
+	background: #2271b1;
+	border-color: #2271b1;
+	color: #fff;
+}

@@ -187,3 +187,95 @@ function hello_elementor_child_parse_faq_list( $raw ) {
 	}
 	return $out;
 }
+
+/**
+ * 在模板中输出语言切换器（基于 heb-product-publisher 写入的 _heb_pp_lang_map）。
+ *
+ * 用法（模板文件）：
+ * if ( function_exists( 'hello_elementor_child_render_language_switcher' ) ) {
+ *     hello_elementor_child_render_language_switcher();
+ * }
+ *
+ * @param int $post_id Post ID, default current post.
+ */
+function hello_elementor_child_render_language_switcher( $post_id = 0 ) {
+	$post_id = $post_id ? (int) $post_id : (int) get_the_ID();
+	if ( $post_id <= 0 ) {
+		return;
+	}
+	$map = get_post_meta( $post_id, '_heb_pp_lang_map', true );
+	if ( ! is_array( $map ) || empty( $map ) ) {
+		return;
+	}
+
+	$labels = [
+		'en' => 'English',
+		'ja' => 'Japanese',
+		'fr' => 'French',
+		'vi' => 'Vietnamese',
+		'ko' => 'Korean',
+		'ru' => 'Russian',
+		'ar' => 'Arabic',
+	];
+	$current = strtolower( (string) get_locale() );
+	$current = strpos( $current, '_' ) !== false ? explode( '_', $current )[0] : $current;
+	$current = sanitize_key( $current );
+
+	echo '<nav class="heb-lang-switcher" aria-label="Language switcher"><ul class="heb-lang-switcher__list">';
+	foreach ( $map as $lang => $url ) {
+		$lang = sanitize_key( (string) $lang );
+		$url  = esc_url( (string) $url );
+		if ( '' === $lang || '' === $url ) {
+			continue;
+		}
+		$label = isset( $labels[ $lang ] ) ? $labels[ $lang ] : strtoupper( $lang );
+		if ( $lang === $current ) {
+			echo '<li class="heb-lang-switcher__item is-current"><span>' . esc_html( $label ) . '</span></li>';
+		} else {
+			echo '<li class="heb-lang-switcher__item"><a href="' . $url . '">' . esc_html( $label ) . '</a></li>';
+		}
+	}
+	echo '</ul></nav>';
+}
+
+/**
+ * 输出 hreflang / x-default（基于 _heb_pp_lang_map）。
+ */
+function hello_elementor_child_output_hreflang_links() {
+	if ( ! is_singular() ) {
+		return;
+	}
+	$post_id = (int) get_queried_object_id();
+	if ( $post_id <= 0 ) {
+		return;
+	}
+	$map = get_post_meta( $post_id, '_heb_pp_lang_map', true );
+	if ( ! is_array( $map ) || empty( $map ) ) {
+		return;
+	}
+	$clean = [];
+	foreach ( $map as $lang => $url ) {
+		$lang = strtolower( sanitize_key( (string) $lang ) );
+		$url  = esc_url( (string) $url );
+		if ( '' === $lang || '' === $url ) {
+			continue;
+		}
+		$clean[ $lang ] = $url;
+	}
+	if ( empty( $clean ) ) {
+		return;
+	}
+	foreach ( $clean as $lang => $url ) {
+		echo '<link rel="alternate" hreflang="' . esc_attr( $lang ) . '" href="' . esc_url( $url ) . "\" />\n";
+	}
+	$x_default = '';
+	if ( ! empty( $clean['en'] ) ) {
+		$x_default = $clean['en'];
+	} else {
+		$x_default = reset( $clean );
+	}
+	if ( is_string( $x_default ) && '' !== $x_default ) {
+		echo '<link rel="alternate" hreflang="x-default" href="' . esc_url( $x_default ) . "\" />\n";
+	}
+}
+add_action( 'wp_head', 'hello_elementor_child_output_hreflang_links', 5 );
