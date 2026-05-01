@@ -28,6 +28,7 @@ class Hello_Elementor_Child_Theme_Updater {
 
 	private function __construct() {
 		add_filter( 'pre_set_site_transient_update_themes', [ $this, 'inject_update' ] );
+		add_filter( 'site_transient_update_themes', [ $this, 'inject_update' ] );
 		add_filter( 'upgrader_pre_download', [ $this, 'authenticate_download' ], 10, 3 );
 	}
 
