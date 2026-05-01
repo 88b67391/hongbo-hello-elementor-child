@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class Hello_Elementor_Child_Theme_Updater {
 
 	const TRANSIENT_KEY = 'hello_child_gh_release_v1';
+	const DEFAULT_REPO  = '88b67391/hongbo-hello-elementor-child';
 
 	/** @var self|null */
 	private static $instance = null;
@@ -59,7 +60,8 @@ class Hello_Elementor_Child_Theme_Updater {
 			return HELLO_CHILD_GITHUB_REPO;
 		}
 		$v = get_option( 'hello_child_github_repo', '' );
-		return is_string( $v ) ? trim( $v ) : '';
+		$v = is_string( $v ) ? trim( $v ) : '';
+		return '' !== $v ? $v : self::DEFAULT_REPO;
 	}
 
 	/**
@@ -112,6 +114,9 @@ class Hello_Elementor_Child_Theme_Updater {
 		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
 			// 回退：某些私库场景 release 不可用时，用最新 tag 兜底。
 			$tag = $this->get_latest_tag( $repo, $headers );
+			if ( '' === $tag ) {
+				$tag = $this->get_latest_tag_from_redirect( $repo );
+			}
 			if ( '' !== $tag ) {
 				$info = [
 					'version'  => ltrim( $tag, 'vV' ),
@@ -126,6 +131,9 @@ class Hello_Elementor_Child_Theme_Updater {
 		$json = json_decode( (string) wp_remote_retrieve_body( $response ), true );
 		if ( ! is_array( $json ) || empty( $json['tag_name'] ) ) {
 			$tag = $this->get_latest_tag( $repo, $headers );
+			if ( '' === $tag ) {
+				$tag = $this->get_latest_tag_from_redirect( $repo );
+			}
 			if ( '' !== $tag ) {
 				$info = [
 					'version'  => ltrim( $tag, 'vV' ),
@@ -188,6 +196,41 @@ class Hello_Elementor_Child_Theme_Updater {
 			return '';
 		}
 		return trim( $tags[0]['name'] );
+	}
+
+	/**
+	 * 通过 releases/latest 的 302 跳转提取 tag（不走 API 限流路径）。
+	 *
+	 * @param string $repo owner/repo.
+	 * @return string
+	 */
+	private function get_latest_tag_from_redirect( $repo ) {
+		$url      = 'https://github.com/' . $repo . '/releases/latest';
+		$response = wp_remote_head(
+			$url,
+			[
+				'timeout'     => 15,
+				'redirection' => 0,
+				'headers'     => [
+					'User-Agent' => 'hello-elementor-child-updater',
+				],
+			]
+		);
+		if ( is_wp_error( $response ) ) {
+			return '';
+		}
+		$code = (int) wp_remote_retrieve_response_code( $response );
+		if ( 301 !== $code && 302 !== $code && 303 !== $code && 307 !== $code && 308 !== $code ) {
+			return '';
+		}
+		$location = wp_remote_retrieve_header( $response, 'location' );
+		if ( ! is_string( $location ) || '' === $location ) {
+			return '';
+		}
+		if ( preg_match( '#/releases/tag/([^/?#]+)#', $location, $m ) ) {
+			return trim( (string) $m[1] );
+		}
+		return '';
 	}
 
 	/**
