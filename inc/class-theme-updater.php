@@ -138,23 +138,25 @@ class Hello_Elementor_Child_Theme_Updater {
 			return null;
 		}
 
+		$tag = (string) $json['tag_name'];
 		$zip = '';
-		if ( ! empty( $json['assets'] ) && is_array( $json['assets'] ) ) {
-			foreach ( $json['assets'] as $asset ) {
-				$name = isset( $asset['name'] ) ? (string) $asset['name'] : '';
-				$url  = isset( $asset['browser_download_url'] ) ? (string) $asset['browser_download_url'] : '';
-				if ( '' !== $token && isset( $asset['url'] ) && is_string( $asset['url'] ) ) {
-					// 私有仓库优先使用 API 资产地址，配合 Authorization + octet-stream 才稳定。
-					$url = (string) $asset['url'];
-				}
-				if ( '' !== $url && preg_match( '/\.zip$/i', $name ) ) {
-					$zip = $url;
-					break;
+		if ( '' !== $token ) {
+			// 私有仓库最稳方案：固定走 zipball/tag，避免 release asset 下载在部分环境 404。
+			$zip = 'https://api.github.com/repos/' . $repo . '/zipball/' . rawurlencode( $tag );
+		} else {
+			if ( ! empty( $json['assets'] ) && is_array( $json['assets'] ) ) {
+				foreach ( $json['assets'] as $asset ) {
+					$name = isset( $asset['name'] ) ? (string) $asset['name'] : '';
+					$url  = isset( $asset['browser_download_url'] ) ? (string) $asset['browser_download_url'] : '';
+					if ( '' !== $url && preg_match( '/\.zip$/i', $name ) ) {
+						$zip = $url;
+						break;
+					}
 				}
 			}
-		}
-		if ( '' === $zip && ! empty( $json['zipball_url'] ) ) {
-			$zip = (string) $json['zipball_url'];
+			if ( '' === $zip && ! empty( $json['zipball_url'] ) ) {
+				$zip = (string) $json['zipball_url'];
+			}
 		}
 
 		$info = [
@@ -249,15 +251,29 @@ class Hello_Elementor_Child_Theme_Updater {
 		}
 
 		require_once ABSPATH . 'wp-admin/includes/file.php';
-		return download_url(
+		$tmp = download_url(
 			$package,
 			300,
 			false,
 			[
-				'Authorization' => 'Bearer ' . $token,
+				'Authorization' => 'token ' . $token,
 				'User-Agent'    => 'hello-elementor-child-updater',
 				'Accept'        => 'application/octet-stream',
 			]
 		);
+		// 兼容少数环境：若 token 方案失败，再尝试 Bearer。
+		if ( is_wp_error( $tmp ) ) {
+			$tmp = download_url(
+				$package,
+				300,
+				false,
+				[
+					'Authorization' => 'Bearer ' . $token,
+					'User-Agent'    => 'hello-elementor-child-updater',
+					'Accept'        => 'application/octet-stream',
+				]
+			);
+		}
+		return $tmp;
 	}
 }
