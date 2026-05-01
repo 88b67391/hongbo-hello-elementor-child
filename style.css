@@ -4,7 +4,7 @@
 	Description: Hello Elementor 的子主题，用于安全地覆盖样式与 PHP，父主题更新时不会丢失自定义内容。
 	Author: 
 	Template: hello-elementor
-	Version: 1.1.0
+	Version: 1.1.1
 	Requires at least: 6.0
 	Requires PHP: 7.4
 	License: GNU General Public License v3 or later
@@ -44,4 +44,22 @@
 	background: #2271b1;
 	border-color: #2271b1;
 	color: #fff;
+}
+
+/* Header language menu */
+.heb-lang-menu > a {
+	min-width: 44px;
+	text-align: center;
+	font-weight: 600;
+}
+.heb-lang-menu .sub-menu {
+	min-width: 88px;
+}
+.heb-lang-menu .sub-menu li a {
+	display: block;
+	padding: 8px 14px;
+}
+.heb-lang-menu .sub-menu li.current-lang a {
+	font-weight: 700;
+	opacity: 0.85;
 }

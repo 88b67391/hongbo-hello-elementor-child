@@ -279,3 +279,99 @@ function hello_elementor_child_output_hreflang_links() {
 	}
 }
 add_action( 'wp_head', 'hello_elementor_child_output_hreflang_links', 5 );
+
+/**
+ * 语言站点域名映射（可用 filter 覆盖）。
+ *
+ * @return array<string,string>
+ */
+function hello_elementor_child_language_sites() {
+	$sites = [
+		'en' => 'https://www.hongbotex.com',
+		'ja' => 'https://ja.hongbotex.com',
+		'fr' => 'https://fr.hongbotex.com',
+		'vi' => 'https://vi.hongbotex.com',
+		'ko' => 'https://ko.hongbotex.com',
+		'ru' => 'https://ru.hongbotex.com',
+		'ar' => 'https://ar.hongbotex.com',
+	];
+	return (array) apply_filters( 'hello_elementor_child_language_sites', $sites );
+}
+
+/**
+ * 构建当前请求对应的全站语言跳转链接：
+ * 1) 若文章有 _heb_pp_lang_map（精确映射）则优先使用；
+ * 2) 否则回退为“同路径跨域名”。
+ *
+ * @return array<string,string>
+ */
+function hello_elementor_child_build_switcher_links() {
+	$sites = hello_elementor_child_language_sites();
+	$links = [];
+	if ( empty( $sites ) ) {
+		return $links;
+	}
+
+	$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '/';
+	if ( '' === $request_uri ) {
+		$request_uri = '/';
+	}
+	foreach ( $sites as $lang => $base_url ) {
+		$lang               = sanitize_key( (string) $lang );
+		$base               = rtrim( esc_url_raw( (string) $base_url ), '/' );
+		$links[ $lang ]     = $base . $request_uri;
+	}
+
+	if ( is_singular() ) {
+		$post_id = (int) get_queried_object_id();
+		if ( $post_id > 0 ) {
+			$map = get_post_meta( $post_id, '_heb_pp_lang_map', true );
+			if ( is_array( $map ) ) {
+				foreach ( $map as $lang => $url ) {
+					$lang = sanitize_key( (string) $lang );
+					$url  = esc_url_raw( (string) $url );
+					if ( '' !== $lang && '' !== $url ) {
+						$links[ $lang ] = $url;
+					}
+				}
+			}
+		}
+	}
+
+	return $links;
+}
+
+/**
+ * 顶部导航追加语言切换器（全站可用）。
+ *
+ * @param string $items Menu html.
+ * @param object $args  Menu args.
+ * @return string
+ */
+function hello_elementor_child_append_language_switcher_to_menu( $items, $args ) {
+	if ( is_admin() || empty( $args->theme_location ) || 'menu-1' !== $args->theme_location ) {
+		return $items;
+	}
+	$links = hello_elementor_child_build_switcher_links();
+	if ( empty( $links ) ) {
+		return $items;
+	}
+
+	$host         = wp_parse_url( home_url(), PHP_URL_HOST );
+	$current_lang = 'en';
+	if ( is_string( $host ) && preg_match( '/^([a-z]{2})\./i', $host, $m ) ) {
+		$current_lang = sanitize_key( strtolower( (string) $m[1] ) );
+	}
+	$label = strtoupper( $current_lang );
+	$out   = '<li class="menu-item menu-item-type-custom menu-item-has-children heb-lang-menu">';
+	$out  .= '<a href="#" aria-label="Language">' . esc_html( $label ) . '</a>';
+	$out  .= '<ul class="sub-menu">';
+	foreach ( $links as $lang => $url ) {
+		$code  = strtoupper( sanitize_key( (string) $lang ) );
+		$class = $lang === $current_lang ? ' class="current-lang"' : '';
+		$out  .= '<li' . $class . '><a href="' . esc_url( $url ) . '">' . esc_html( $code ) . '</a></li>';
+	}
+	$out .= '</ul></li>';
+	return $items . $out;
+}
+add_filter( 'wp_nav_menu_items', 'hello_elementor_child_append_language_switcher_to_menu', 20, 2 );
