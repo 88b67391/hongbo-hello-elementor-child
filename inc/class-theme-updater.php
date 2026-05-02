@@ -11,8 +11,11 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 class Hello_Elementor_Child_Theme_Updater {
 
-	const TRANSIENT_KEY = 'hello_child_gh_release_v1';
-	const DEFAULT_REPO  = '88b67391/hongbo-hello-elementor-child';
+	/** @since 1.1.6 升级 key，丢弃旧缓存并改用 site transient。 */
+	const TRANSIENT_KEY = 'hello_child_gh_release_v2';
+	const LEGACY_TRANSIENT_KEY = 'hello_child_gh_release_v1';
+
+	const DEFAULT_REPO = '88b67391/hongbo-hello-elementor-child';
 
 	/** @var self|null */
 	private static $instance = null;
@@ -35,7 +38,7 @@ class Hello_Elementor_Child_Theme_Updater {
 	}
 
 	/**
-	 * 在主题页强制刷新一次 update_themes，避免站点长期命中旧缓存导致不显示更新。
+	 * 在主题页强制刷新：清除 GitHub 缓存 + update_themes，否则仅删后者仍会命中 12h transient。
 	 */
 	public function force_check_on_themes_screen() {
 		if ( ! current_user_can( 'update_themes' ) ) {
@@ -45,7 +48,7 @@ class Hello_Elementor_Child_Theme_Updater {
 		if ( isset( $_GET[ $flag ] ) ) {
 			return;
 		}
-		delete_site_transient( 'update_themes' );
+		self::purge_cache();
 		if ( ! function_exists( 'wp_update_themes' ) ) {
 			require_once ABSPATH . 'wp-includes/update.php';
 		}
@@ -87,7 +90,7 @@ class Hello_Elementor_Child_Theme_Updater {
 	 */
 	public function get_release( $force = false ) {
 		if ( ! $force ) {
-			$cached = get_transient( self::TRANSIENT_KEY );
+			$cached = get_site_transient( self::TRANSIENT_KEY );
 			if ( is_array( $cached ) ) {
 				return $cached;
 			}
@@ -107,99 +110,152 @@ class Hello_Elementor_Child_Theme_Updater {
 			$headers['Authorization'] = 'Bearer ' . $token;
 		}
 
+		$candidates = [];
+		$release_json = null;
+
 		$response = wp_remote_get(
 			'https://api.github.com/repos/' . $repo . '/releases/latest',
-			[ 'timeout' => 15, 'headers' => $headers ]
+			[
+				'timeout' => 15,
+				'headers' => $headers,
+			]
 		);
-		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
-			// 回退：某些私库场景 release 不可用时，用最新 tag 兜底。
-			$tag = $this->get_latest_tag( $repo, $headers );
-			if ( '' === $tag ) {
-				$tag = $this->get_latest_tag_from_redirect( $repo );
+		if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
+			$release_json = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+			if ( is_array( $release_json ) && ! empty( $release_json['tag_name'] ) && is_string( $release_json['tag_name'] ) ) {
+				$tag = trim( (string) $release_json['tag_name'] );
+				$ver = $this->tag_to_version( $tag );
+				if ( '' !== $ver ) {
+					$candidates[ $tag ] = [
+						'tag'          => $tag,
+						'version'      => $ver,
+						'release_json' => $release_json,
+					];
+				}
 			}
-			if ( '' !== $tag ) {
-				$info = [
-					'version'  => ltrim( $tag, 'vV' ),
-					'zip_url'  => 'https://api.github.com/repos/' . $repo . '/zipball/' . rawurlencode( $tag ),
-					'homepage' => 'https://github.com/' . $repo . '/releases/tag/' . rawurlencode( $tag ),
-				];
-				set_transient( self::TRANSIENT_KEY, $info, 12 * HOUR_IN_SECONDS );
-				return $info;
-			}
-			return null;
-		}
-		$json = json_decode( (string) wp_remote_retrieve_body( $response ), true );
-		if ( ! is_array( $json ) || empty( $json['tag_name'] ) ) {
-			$tag = $this->get_latest_tag( $repo, $headers );
-			if ( '' === $tag ) {
-				$tag = $this->get_latest_tag_from_redirect( $repo );
-			}
-			if ( '' !== $tag ) {
-				$info = [
-					'version'  => ltrim( $tag, 'vV' ),
-					'zip_url'  => 'https://api.github.com/repos/' . $repo . '/zipball/' . rawurlencode( $tag ),
-					'homepage' => 'https://github.com/' . $repo . '/releases/tag/' . rawurlencode( $tag ),
-				];
-				set_transient( self::TRANSIENT_KEY, $info, 12 * HOUR_IN_SECONDS );
-				return $info;
-			}
-			return null;
 		}
 
-		$tag = (string) $json['tag_name'];
-		$zip = '';
-		if ( '' !== $token ) {
-			// 私有仓库最稳方案：固定走 zipball/tag，避免 release asset 下载在部分环境 404。
-			$zip = 'https://api.github.com/repos/' . $repo . '/zipball/' . rawurlencode( $tag );
-		} else {
-			if ( ! empty( $json['assets'] ) && is_array( $json['assets'] ) ) {
-				foreach ( $json['assets'] as $asset ) {
-					$name = isset( $asset['name'] ) ? (string) $asset['name'] : '';
-					$url  = isset( $asset['browser_download_url'] ) ? (string) $asset['browser_download_url'] : '';
-					if ( '' !== $url && preg_match( '/\.zip$/i', $name ) ) {
-						$zip = $url;
-						break;
+		$response = wp_remote_get(
+			'https://api.github.com/repos/' . $repo . '/tags?per_page=100',
+			[
+				'timeout' => 15,
+				'headers' => $headers,
+			]
+		);
+		if ( ! is_wp_error( $response ) && 200 === (int) wp_remote_retrieve_response_code( $response ) ) {
+			$tags = json_decode( (string) wp_remote_retrieve_body( $response ), true );
+			if ( is_array( $tags ) ) {
+				foreach ( $tags as $row ) {
+					if ( empty( $row['name'] ) || ! is_string( $row['name'] ) ) {
+						continue;
+					}
+					$tag = trim( $row['name'] );
+					$ver = $this->tag_to_version( $tag );
+					if ( '' === $ver ) {
+						continue;
+					}
+					if ( ! isset( $candidates[ $tag ] ) ) {
+						$candidates[ $tag ] = [
+							'tag'          => $tag,
+							'version'      => $ver,
+							'release_json' => null,
+						];
 					}
 				}
 			}
-			if ( '' === $zip && ! empty( $json['zipball_url'] ) ) {
-				$zip = (string) $json['zipball_url'];
+		}
+
+		if ( empty( $candidates ) ) {
+			$tag = $this->get_latest_tag_from_redirect( $repo );
+			if ( '' !== $tag ) {
+				$ver = $this->tag_to_version( $tag );
+				if ( '' !== $ver ) {
+					$candidates[ $tag ] = [
+						'tag'          => $tag,
+						'version'      => $ver,
+						'release_json' => null,
+					];
+				}
 			}
 		}
 
+		if ( empty( $candidates ) ) {
+			return null;
+		}
+
+		$best = null;
+		foreach ( $candidates as $row ) {
+			if ( null === $best || version_compare( $row['version'], $best['version'], '>' ) ) {
+				$best = $row;
+			}
+		}
+
+		if ( null === $best ) {
+			return null;
+		}
+
+		$tag   = $best['tag'];
+		$rjson = $best['release_json'];
+		$zip   = $this->resolve_zip_url( $repo, $tag, $token, is_array( $rjson ) ? $rjson : null );
+
+		if ( '' === $zip ) {
+			return null;
+		}
+
 		$info = [
-			'version'  => ltrim( (string) $json['tag_name'], 'vV' ),
+			'version'  => $best['version'],
 			'zip_url'  => $zip,
-			'homepage' => isset( $json['html_url'] ) ? (string) $json['html_url'] : ( 'https://github.com/' . $repo ),
+			'homepage' => 'https://github.com/' . $repo . '/releases/tag/' . rawurlencode( $tag ),
 		];
-		set_transient( self::TRANSIENT_KEY, $info, 12 * HOUR_IN_SECONDS );
+		set_site_transient( self::TRANSIENT_KEY, $info, 12 * HOUR_IN_SECONDS );
 		return $info;
 	}
 
 	/**
-	 * 获取最新 tag（release 不可用时兜底）。
-	 *
-	 * @param string               $repo    owner/repo.
-	 * @param array<string,string> $headers Request headers.
-	 * @return string
+	 * @param string $tag Tag name e.g. v1.1.5.
+	 * @return string Normalized version for version_compare, empty if unusable.
 	 */
-	private function get_latest_tag( $repo, array $headers ) {
-		$response = wp_remote_get(
-			'https://api.github.com/repos/' . $repo . '/tags?per_page=1',
-			[ 'timeout' => 15, 'headers' => $headers ]
-		);
-		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+	private function tag_to_version( $tag ) {
+		$tag = trim( (string) $tag );
+		if ( '' === $tag ) {
 			return '';
 		}
-		$tags = json_decode( (string) wp_remote_retrieve_body( $response ), true );
-		if ( ! is_array( $tags ) || empty( $tags[0]['name'] ) || ! is_string( $tags[0]['name'] ) ) {
-			return '';
-		}
-		return trim( $tags[0]['name'] );
+		$v = ltrim( $tag, 'vV' );
+		return $v;
 	}
 
 	/**
-	 * 通过 releases/latest 的 302 跳转提取 tag（不走 API 限流路径）。
+	 * @param string               $repo         owner/repo.
+	 * @param string               $tag          Exact tag on GitHub.
+	 * @param string               $token        GitHub token or ''.
+	 * @param array<string,mixed>|null $release_json Parsed releases/latest JSON when tag matches.
+	 * @return string
+	 */
+	private function resolve_zip_url( $repo, $tag, $token, $release_json ) {
+		if ( '' !== $token ) {
+			return 'https://api.github.com/repos/' . $repo . '/zipball/' . rawurlencode( $tag );
+		}
+
+		if ( is_array( $release_json ) && isset( $release_json['tag_name'] ) && (string) $release_json['tag_name'] === $tag ) {
+			if ( ! empty( $release_json['assets'] ) && is_array( $release_json['assets'] ) ) {
+				foreach ( $release_json['assets'] as $asset ) {
+					$name = isset( $asset['name'] ) ? (string) $asset['name'] : '';
+					$url  = isset( $asset['browser_download_url'] ) ? (string) $asset['browser_download_url'] : '';
+					if ( '' !== $url && preg_match( '/\.zip$/i', $name ) ) {
+						return $url;
+					}
+				}
+			}
+			if ( ! empty( $release_json['zipball_url'] ) ) {
+				return (string) $release_json['zipball_url'];
+			}
+		}
+
+		return 'https://api.github.com/repos/' . $repo . '/zipball/' . rawurlencode( $tag );
+	}
+
+	/**
+	 * 通过 releases/latest 的 302 跳转提取 tag（API 不可用时兜底）。
 	 *
 	 * @param string $repo owner/repo.
 	 * @return string
@@ -237,7 +293,8 @@ class Hello_Elementor_Child_Theme_Updater {
 	 * Clear update cache.
 	 */
 	public static function purge_cache() {
-		delete_transient( self::TRANSIENT_KEY );
+		delete_site_transient( self::LEGACY_TRANSIENT_KEY );
+		delete_site_transient( self::TRANSIENT_KEY );
 		delete_site_transient( 'update_themes' );
 	}
 
@@ -304,7 +361,6 @@ class Hello_Elementor_Child_Theme_Updater {
 				'Accept'        => 'application/octet-stream',
 			]
 		);
-		// 兼容少数环境：若 token 方案失败，再尝试 Bearer。
 		if ( is_wp_error( $tmp ) ) {
 			$tmp = download_url(
 				$package,
