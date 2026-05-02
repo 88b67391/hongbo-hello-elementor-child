@@ -4,7 +4,7 @@
 	Description: Hello Elementor 的子主题，用于安全地覆盖样式与 PHP，父主题更新时不会丢失自定义内容。
 	Author: 
 	Template: hello-elementor
-	Version: 1.1.6
+	Version: 1.1.7
 	Requires at least: 6.0
 	Requires PHP: 7.4
 	License: GNU General Public License v3 or later
@@ -329,7 +329,7 @@ a.elementor-post-info__terms-list-item {
 .heb-product-badges__item {
 	display: inline-block;
 	padding: 6px 12px;
-	border-radius: 2px;
+	border-radius: 0;
 	font-size: 14px;
 	line-height: 1.2;
 	font-weight: 600;
