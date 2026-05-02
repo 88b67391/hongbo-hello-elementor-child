@@ -440,3 +440,63 @@ function hello_elementor_child_lang_switcher_shortcode( $atts = [] ) {
 	return $html;
 }
 add_shortcode( 'heb_lang_switcher', 'hello_elementor_child_lang_switcher_shortcode' );
+
+/**
+ * Shortcode: [heb_product_badges]
+ * 输出当前文章绑定的分类术语标签（默认 products 的 product-categories）。
+ *
+ * 属性：
+ *   taxonomy — 分类法 slug，默认 product-categories
+ *   link     — yes|no，是否链接到术语归档，默认 yes
+ *
+ * @param array<string,string> $atts Shortcode attributes.
+ * @return string
+ */
+function hello_elementor_child_product_badges_shortcode( $atts = [] ) {
+	$atts = shortcode_atts(
+		[
+			'taxonomy' => 'product-categories',
+			'link'     => 'yes',
+		],
+		(array) $atts,
+		'heb_product_badges'
+	);
+
+	$post_id = (int) get_the_ID();
+	if ( $post_id <= 0 ) {
+		return '';
+	}
+
+	$taxonomy = sanitize_key( (string) $atts['taxonomy'] );
+	if ( '' === $taxonomy || ! taxonomy_exists( $taxonomy ) ) {
+		return '';
+	}
+
+	$terms = get_the_terms( $post_id, $taxonomy );
+	if ( is_wp_error( $terms ) || empty( $terms ) ) {
+		return '';
+	}
+
+	$with_links = 'yes' === strtolower( (string) $atts['link'] );
+
+	$html = '<div class="heb-product-badges" role="list">';
+	foreach ( $terms as $term ) {
+		if ( ! isset( $term->name ) ) {
+			continue;
+		}
+		$name = esc_html( $term->name );
+		if ( $with_links ) {
+			$url = get_term_link( $term );
+			if ( is_wp_error( $url ) ) {
+				$html .= '<span class="heb-product-badges__item" role="listitem">' . $name . '</span>';
+			} else {
+				$html .= '<a class="heb-product-badges__item" role="listitem" href="' . esc_url( $url ) . '">' . $name . '</a>';
+			}
+		} else {
+			$html .= '<span class="heb-product-badges__item" role="listitem">' . $name . '</span>';
+		}
+	}
+	$html .= '</div>';
+	return $html;
+}
+add_shortcode( 'heb_product_badges', 'hello_elementor_child_product_badges_shortcode' );

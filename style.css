@@ -4,7 +4,7 @@
 	Description: Hello Elementor 的子主题，用于安全地覆盖样式与 PHP，父主题更新时不会丢失自定义内容。
 	Author: 
 	Template: hello-elementor
-	Version: 1.1.4
+	Version: 1.1.5
 	Requires at least: 6.0
 	Requires PHP: 7.4
 	License: GNU General Public License v3 or later
@@ -15,6 +15,138 @@
 /* 在此添加自定义 CSS，或通过外观 → 自定义 → 额外 CSS */
 
 /* Language switcher (heb-product-publisher map based) */
+.cs-form-1 .elementor-field-group {
+    flex-wrap: nowrap;
+    border: 1px solid #d1d5db;
+    padding: 0 !important;
+}
+.cs-form-1 .elementor-field-label{
+    max-width: 150px;
+    width: 100%;
+    font-size: 14px;
+    font-weight: bold !important;
+    color: #374151 !important;
+    text-align: right;
+    background: #f3f4f6;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: end;
+    padding: 0 10px;
+}
+.cs-form-1 .elementor-field-group .elementor-field{
+    border: 0;
+}
+.cs-form-1 .elementor-field-group.e-form__buttons{
+    border: 0 !important;
+    justify-content: center;
+}
+.cs-form-1 .elementor-field-group .elementor-button{
+    width: min-content;
+    max-width: max-content;
+    padding: 0 60px;
+}
+.cs-form-1 .elementor-form-fields-wrapper{
+    margin: 0 !important;
+}
+.page-numbers.prev{
+    border: 1px solid #e9e9e9;
+    padding: 5px 15px;
+    border-radius: 6px;
+}
+.page-numbers.next{
+    border: 1px solid #e9e9e9;
+    padding: 5px 15px;
+    border-radius: 6px;
+}
+
+.elementor-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.page-numbers{
+    border-radius: 5px !important;
+    height: 33px;
+    padding: 0 11px;
+    display: flex;
+    align-items: center;
+    color: #666 !important;
+    font-family: 'Noto Sans';
+    cursor: pointer !important;
+}
+
+.page-numbers:hover{
+    color: #fff !important;
+    background: #003d82!important;
+    border-color: #003d82 !important;
+}
+
+.page-numbers.current {
+    background: #003d82;
+    color: #fff !important;
+}
+
+.cs-cat-warp h2.elementor-heading-title.elementor-size-default a {
+    display: block;
+    padding: 14px 20px;
+    border-left: solid 3px #ffffff;
+    font-weight: 400 !important;
+    transition: all .3s ease;
+}
+.cs-cat-warp h2.elementor-heading-title.elementor-size-default a:hover{
+    background: #f0f7ff;
+    font-weight: 700 !important;
+    border-color:  #003d82;
+    color: #003d82;
+}
+a.elementor-post-info__terms-list-item {
+    background: #22c55e;
+    color: #fff !important;
+    padding: 5px;
+    font-weight: 600;
+}
+.cs-item-info .elementor-icon-box-wrapper{
+}
+.cs-item-info .elementor-icon-box-content {
+    display: flex;
+    gap: 5px;
+}
+.cs-item-info .elementor-icon-box-content .elementor-icon-box-title{
+    margin: 0 !important;
+    display: flex;
+    align-items: center;
+}
+
+.cs-item-info .elementor-icon-box-content .elementor-icon-box-title span{
+}
+.cs-fqa-warp .e-n-tabs-heading {
+    background: #f8f9fa;
+}
+.cs-solutions-warp .elementor-heading-title.elementor-size-default > a {
+    background: #22c55e;
+    padding: 3px 10px;
+}
+.cs-product-item-warp .elementor-widget-image{
+    overflow: hidden;
+}
+.cs-product-item-warp .elementor-widget-image a img{
+    transition: all .2s ease;
+}
+.cs-product-item-warp:hover .elementor-widget-image a img {
+    transform: scale(1.03);
+}
+.cs-certifications .heb-cert__cell {
+    max-width: 140px;
+    height: 140px;
+    margin: 0 auto;
+    width: 100%;
+}
+.cs-feature .heb-fvg__icon-wrap .heb-fvg__icon-el {
+    padding: 10px;
+    fill: #003d82;
+}
 .heb-lang-switcher {
 	margin: 12px 0;
 }
@@ -181,4 +313,37 @@
 		width: 100%;
 		min-width: 0;
 	}
+}
+
+/* Product term badges (shortcode [heb_product_badges]) */
+.heb-product-badges {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin: 0 0 12px;
+	padding: 0;
+	list-style: none;
+}
+
+.heb-product-badges__item {
+	display: inline-block;
+	padding: 6px 12px;
+	border-radius: 2px;
+	font-size: 14px;
+	line-height: 1.2;
+	font-weight: 600;
+	color: #fff;
+	background-color: #22c55e;
+	text-decoration: none;
+	box-sizing: border-box;
+	transition: opacity 0.15s ease, background-color 0.15s ease;
+}
+
+a.heb-product-badges__item:hover,
+a.heb-product-badges__item:focus-visible {
+	color: #fff;
+	opacity: 0.92;
+	background-color: #16a34a;
+	text-decoration: none;
 }
