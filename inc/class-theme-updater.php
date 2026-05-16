@@ -35,6 +35,64 @@ class Hello_Elementor_Child_Theme_Updater {
 		add_filter( 'site_transient_update_themes', [ $this, 'inject_update' ] );
 		add_filter( 'upgrader_pre_download', [ $this, 'authenticate_download' ], 10, 3 );
 		add_action( 'load-themes.php', [ $this, 'force_check_on_themes_screen' ] );
+		add_action( 'load-update-core.php', [ $this, 'force_check_on_themes_screen' ] );
+
+		// 跟 heb-product-publisher 插件协作：用户点顶部"检查插件+主题更新"按钮时，
+		// 优先级 5 早于插件自己的 10，把子主题的 GitHub 缓存一起清掉。
+		add_action( 'admin_post_heb_pp_check_updates', [ $this, 'purge_on_external_check' ], 5 );
+
+		// 独立入口：admin-post.php?action=hello_child_check_theme_updates
+		add_action( 'admin_post_hello_child_check_theme_updates', [ $this, 'handle_force_check' ] );
+		add_action( 'admin_bar_menu', [ $this, 'admin_bar_check_button' ], 91 );
+	}
+
+	/**
+	 * 由插件的"检查更新"按钮触发，顺手清子主题 transient。
+	 */
+	public function purge_on_external_check() {
+		if ( ! current_user_can( 'update_themes' ) ) {
+			return;
+		}
+		self::purge_cache();
+	}
+
+	/**
+	 * admin-post.php?action=hello_child_check_theme_updates 的处理器。
+	 */
+	public function handle_force_check() {
+		if ( ! current_user_can( 'update_themes' ) ) {
+			wp_die( esc_html__( '权限不足。', 'hello-elementor-child' ) );
+		}
+		check_admin_referer( 'hello_child_check_theme_updates' );
+		self::purge_cache();
+		if ( ! function_exists( 'wp_update_themes' ) ) {
+			require_once ABSPATH . 'wp-includes/update.php';
+		}
+		wp_update_themes();
+		wp_safe_redirect( admin_url( 'themes.php' ) );
+		exit;
+	}
+
+	/**
+	 * 顶部管理条增加"检查主题更新"按钮（独立于 heb-product-publisher）。
+	 *
+	 * @param \WP_Admin_Bar $admin_bar Admin bar.
+	 */
+	public function admin_bar_check_button( $admin_bar ) {
+		if ( ! is_admin_bar_showing() || ! current_user_can( 'update_themes' ) ) {
+			return;
+		}
+		$href = wp_nonce_url(
+			admin_url( 'admin-post.php?action=hello_child_check_theme_updates' ),
+			'hello_child_check_theme_updates'
+		);
+		$admin_bar->add_node(
+			[
+				'id'    => 'hello-child-check-theme-updates',
+				'title' => esc_html__( '检查子主题更新', 'hello-elementor-child' ),
+				'href'  => $href,
+			]
+		);
 	}
 
 	/**
