@@ -305,24 +305,15 @@ function hello_elementor_child_lang_flag_html( $lang ) {
 	}
 
 	$cc_lower = strtolower( $cc );
-	$svg_url  = 'https://flagcdn.com/40x30/' . $cc_lower . '.png';
-
-	// Regional Indicator Symbol：把 'JP' → 🇯🇵。
-	$letters = str_split( $cc );
-	$emoji   = '';
-	foreach ( $letters as $ch ) {
-		$emoji .= mb_chr( 127397 + ord( $ch ), 'UTF-8' );
-	}
+	$png_url  = 'https://flagcdn.com/40x30/' . $cc_lower . '.png';
 
 	return sprintf(
 		'<span class="heb-lang-flag" aria-hidden="true" data-cc="%1$s">'
-		. '<img class="heb-lang-flag__img" loading="lazy" decoding="async" src="%2$s" alt="" width="20" height="15" '
-		. "onerror=\"this.setAttribute('data-failed','1');this.onerror=null;\" />"
-		. '<span class="heb-lang-flag__emoji">%3$s</span>'
+		. '<img class="heb-lang-flag__img" loading="lazy" decoding="async" src="%2$s" alt="" width="22" height="16" '
+		. "onerror=\"this.closest('.heb-lang-flag').classList.add('heb-lang-flag--failed');this.onerror=null;\" />"
 		. '</span>',
 		esc_attr( $cc ),
-		esc_url( $svg_url ),
-		esc_html( $emoji )
+		esc_url( $png_url )
 	);
 }
 
