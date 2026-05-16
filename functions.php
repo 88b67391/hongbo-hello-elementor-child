@@ -232,15 +232,7 @@ function hello_elementor_child_render_language_switcher( $post_id = 0 ) {
 		return;
 	}
 
-	$labels = [
-		'en' => 'English',
-		'ja' => 'Japanese',
-		'fr' => 'French',
-		'vi' => 'Vietnamese',
-		'ko' => 'Korean',
-		'ru' => 'Russian',
-		'ar' => 'Arabic',
-	];
+	$labels  = hello_elementor_child_lang_labels();
 	$current = strtolower( (string) get_locale() );
 	$current = strpos( $current, '_' ) !== false ? explode( '_', $current )[0] : $current;
 	$current = sanitize_key( $current );
@@ -253,13 +245,85 @@ function hello_elementor_child_render_language_switcher( $post_id = 0 ) {
 			continue;
 		}
 		$label = isset( $labels[ $lang ] ) ? $labels[ $lang ] : strtoupper( $lang );
+		$flag  = hello_elementor_child_lang_flag_html( $lang );
 		if ( $lang === $current ) {
-			echo '<li class="heb-lang-switcher__item is-current"><span>' . esc_html( $label ) . '</span></li>';
+			echo '<li class="heb-lang-switcher__item is-current"><span>' . $flag . '<span class="heb-lang-switcher__name">' . esc_html( $label ) . '</span></span></li>';
 		} else {
-			echo '<li class="heb-lang-switcher__item"><a href="' . $url . '">' . esc_html( $label ) . '</a></li>';
+			echo '<li class="heb-lang-switcher__item"><a href="' . $url . '">' . $flag . '<span class="heb-lang-switcher__name">' . esc_html( $label ) . '</span></a></li>';
 		}
 	}
 	echo '</ul></nav>';
+}
+
+/**
+ * 各语言对应的英文标签（统一一份给所有切换器复用）。
+ *
+ * @return array<string,string>
+ */
+function hello_elementor_child_lang_labels() {
+	return [
+		'en' => 'English',
+		'ja' => 'Japanese',
+		'fr' => 'French',
+		'vi' => 'Vietnamese',
+		'ko' => 'Korean',
+		'ru' => 'Russian',
+		'ar' => 'Arabic',
+	];
+}
+
+/**
+ * 各语言对应的国家代码（用于国旗 emoji / SVG）。
+ *
+ * @return array<string,string>
+ */
+function hello_elementor_child_lang_country_codes() {
+	return [
+		'en' => 'US',
+		'ja' => 'JP',
+		'fr' => 'FR',
+		'vi' => 'VN',
+		'ko' => 'KR',
+		'ru' => 'RU',
+		'ar' => 'SA',
+	];
+}
+
+/**
+ * 返回单个国旗的 HTML 片段：emoji（默认平台）+ flagcdn SVG 兜底（Windows 等不支持 emoji flag）。
+ * 输出已经转义过的 HTML，调用方直接 echo 即可。
+ *
+ * @param string $lang 语言代码（小写 BCP47 第一段，例如 en/ja/fr/zh）.
+ * @return string
+ */
+function hello_elementor_child_lang_flag_html( $lang ) {
+	$codes = hello_elementor_child_lang_country_codes();
+	$lang  = strtolower( sanitize_key( (string) $lang ) );
+	$cc    = isset( $codes[ $lang ] ) ? $codes[ $lang ] : '';
+	if ( '' === $cc ) {
+		return '';
+	}
+
+	$cc_lower = strtolower( $cc );
+	$svg_url  = 'https://flagcdn.com/40x30/' . $cc_lower . '.png';
+
+	// Regional Indicator Symbol：把 'JP' → 🇯🇵。
+	$letters = str_split( $cc );
+	$emoji   = '';
+	foreach ( $letters as $ch ) {
+		$emoji .= mb_chr( 127397 + ord( $ch ), 'UTF-8' );
+	}
+
+	return sprintf(
+		'<span class="heb-lang-flag" aria-hidden="true" data-cc="%1$s">'
+		. '<img class="heb-lang-flag__img" loading="lazy" decoding="async" src="%2$s" alt="" width="20" height="15" '
+		. "onerror=\"this.setAttribute('data-failed','1');this.onerror=null;\" />"
+		. '<span class="heb-lang-flag__emoji">%3$s</span>'
+		. '</span>',
+		esc_attr( $cc ),
+		esc_url( $svg_url ),
+		esc_html( $emoji )
+	);
 }
 
 /**
@@ -386,14 +450,22 @@ function hello_elementor_child_append_language_switcher_to_menu( $items, $args )
 	if ( is_string( $host ) && preg_match( '/^([a-z]{2})\./i', $host, $m ) ) {
 		$current_lang = sanitize_key( strtolower( (string) $m[1] ) );
 	}
-	$label = strtoupper( $current_lang );
+	$labels        = hello_elementor_child_lang_labels();
+	$current_label = isset( $labels[ $current_lang ] ) ? $labels[ $current_lang ] : strtoupper( $current_lang );
 	$out   = '<li class="menu-item menu-item-type-custom menu-item-has-children heb-lang-menu">';
-	$out  .= '<a href="#" aria-label="Language">' . esc_html( $label ) . '</a>';
+	$out  .= '<a href="#" aria-label="Language">'
+		. hello_elementor_child_lang_flag_html( $current_lang )
+		. '<span class="heb-lang-menu__name">' . esc_html( $current_label ) . '</span>'
+		. '</a>';
 	$out  .= '<ul class="sub-menu">';
 	foreach ( $links as $lang => $url ) {
-		$code  = strtoupper( sanitize_key( (string) $lang ) );
+		$lang  = sanitize_key( (string) $lang );
+		$label = isset( $labels[ $lang ] ) ? $labels[ $lang ] : strtoupper( $lang );
 		$class = $lang === $current_lang ? ' class="current-lang"' : '';
-		$out  .= '<li' . $class . '><a href="' . esc_url( $url ) . '">' . esc_html( $code ) . '</a></li>';
+		$out  .= '<li' . $class . '><a href="' . esc_url( $url ) . '">'
+			. hello_elementor_child_lang_flag_html( $lang )
+			. '<span class="heb-lang-menu__name">' . esc_html( $label ) . '</span>'
+			. '</a></li>';
 	}
 	$out .= '</ul></li>';
 	return $items . $out;
@@ -427,15 +499,7 @@ function hello_elementor_child_lang_switcher_shortcode( $atts = [] ) {
 		$current_lang = sanitize_key( strtolower( (string) $m[1] ) );
 	}
 
-	$labels = [
-		'en' => 'English',
-		'ja' => 'Japanese',
-		'fr' => 'French',
-		'vi' => 'Vietnamese',
-		'ko' => 'Korean',
-		'ru' => 'Russian',
-		'ar' => 'Arabic',
-	];
+	$labels = hello_elementor_child_lang_labels();
 
 	$cls = 'heb-lang-switcher heb-lang-switcher--custom';
 	if ( is_string( $atts['class'] ) && '' !== trim( $atts['class'] ) ) {
@@ -443,10 +507,17 @@ function hello_elementor_child_lang_switcher_shortcode( $atts = [] ) {
 	}
 
 	$current_label = isset( $labels[ $current_lang ] ) ? $labels[ $current_lang ] : strtoupper( $current_lang );
-	$html          = '<nav class="' . esc_attr( $cls ) . '" aria-label="Language switcher">';
-	$html         .= '<details class="heb-lang-switcher__details">';
-	$html         .= '<summary class="heb-lang-switcher__trigger"><span>' . esc_html( $current_label ) . '</span></summary>';
-	$html         .= '<ul class="heb-lang-switcher__menu">';
+	$current_flag  = hello_elementor_child_lang_flag_html( $current_lang );
+
+	$html  = '<nav class="' . esc_attr( $cls ) . '" aria-label="Language switcher">';
+	$html .= '<details class="heb-lang-switcher__details">';
+	$html .= '<summary class="heb-lang-switcher__trigger">'
+		. '<span class="heb-lang-switcher__trigger-inner">'
+		. $current_flag
+		. '<span class="heb-lang-switcher__name">' . esc_html( $current_label ) . '</span>'
+		. '</span>'
+		. '</summary>';
+	$html .= '<ul class="heb-lang-switcher__menu">';
 	foreach ( $links as $lang => $url ) {
 		$lang = sanitize_key( (string) $lang );
 		$url  = esc_url( (string) $url );
@@ -454,10 +525,11 @@ function hello_elementor_child_lang_switcher_shortcode( $atts = [] ) {
 			continue;
 		}
 		$label = isset( $labels[ $lang ] ) ? $labels[ $lang ] : strtoupper( $lang );
+		$flag  = hello_elementor_child_lang_flag_html( $lang );
 		if ( $lang === $current_lang ) {
-			$html .= '<li class="is-current"><span>' . esc_html( $label ) . '</span></li>';
+			$html .= '<li class="is-current"><span>' . $flag . '<span class="heb-lang-switcher__name">' . esc_html( $label ) . '</span></span></li>';
 		} else {
-			$html .= '<li><a href="' . $url . '">' . esc_html( $label ) . '</a></li>';
+			$html .= '<li><a href="' . $url . '">' . $flag . '<span class="heb-lang-switcher__name">' . esc_html( $label ) . '</span></a></li>';
 		}
 	}
 	$html .= '</ul></details></nav>';
