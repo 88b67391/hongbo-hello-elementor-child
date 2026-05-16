@@ -4,7 +4,7 @@
 	Description: Hello Elementor 的子主题，用于安全地覆盖样式与 PHP，父主题更新时不会丢失自定义内容。
 	Author: 
 	Template: hello-elementor
-	Version: 1.1.9
+	Version: 1.1.10
 	Requires at least: 6.0
 	Requires PHP: 7.4
 	License: GNU General Public License v3 or later
@@ -301,24 +301,34 @@ a.elementor-post-info__terms-list-item {
 	line-height: 1;
 	font-size: 16px;
 }
-.heb-lang-flag__img {
+/* 注意：选择器特异性必须 ≥ Elementor 的 `.elementor img`，
+   否则 `.elementor img { height: auto }` 会把高度压成 0。 */
+.heb-lang-flag img.heb-lang-flag__img {
 	display: block;
-	width: 100%;
-	height: 100%;
+	width: 22px;
+	height: 16px;
+	min-width: 22px;
+	max-width: 22px;
+	min-height: 16px;
+	max-height: 16px;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 3px;
+	box-shadow: none;
+	background: transparent;
 	object-fit: cover;
+	object-position: center;
 }
 .heb-lang-flag__emoji {
 	display: none;
+	line-height: 1;
 }
-/* 当远端 CDN 图片加载失败 / 被屏蔽时，回退用 emoji（Mac/iOS/Android 显示彩色国旗，Windows 显示双字母代码） */
-.heb-lang-flag__img[alt=""][src=""],
-.heb-lang-flag__img:not([src]) {
+/* CDN 图片加载失败时降级为 emoji */
+.heb-lang-flag img.heb-lang-flag__img[data-failed="1"] {
 	display: none;
 }
-.heb-lang-flag__img[data-failed="1"] {
-	display: none;
-}
-.heb-lang-flag__img[data-failed="1"] + .heb-lang-flag__emoji {
+.heb-lang-flag img.heb-lang-flag__img[data-failed="1"] + .heb-lang-flag__emoji {
 	display: inline;
 }
 
