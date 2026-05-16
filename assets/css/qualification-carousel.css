@@ -1,0 +1,238 @@
+/**
+ * Qualification carousel + Swiper (widget heb_qualification_carousel)
+ */
+
+.heb-qual-carousel {
+	box-sizing: border-box;
+}
+
+.heb-qual-carousel *,
+.heb-qual-carousel *::before,
+.heb-qual-carousel *::after {
+	box-sizing: border-box;
+}
+
+.heb-qual-carousel__head {
+	margin: 0 0 20px;
+}
+
+.heb-qual-carousel__title {
+	margin: 0 0 10px;
+	padding: 0;
+	font-weight: 600;
+	color: #1a1a1a;
+}
+
+.heb-qual-carousel__title-line {
+	display: block;
+	width: 48px;
+	height: 2px;
+	background-color: #c8c8c8;
+}
+
+.heb-qual-carousel__title-line.is-hidden {
+	display: none;
+}
+
+.heb-qual-carousel__row {
+	display: flex;
+	align-items: center;
+	gap: 18px;
+}
+
+/* Reset Swiper default absolute nav; our buttons sit in a flex row */
+.heb-qual-carousel__row .heb-qual-carousel__nav.swiper-button-prev,
+.heb-qual-carousel__row .heb-qual-carousel__nav.swiper-button-next {
+	position: static;
+	top: auto;
+	left: auto;
+	right: auto;
+	bottom: auto;
+	margin: 0;
+	width: 34px;
+	height: 46px;
+	min-height: 46px;
+	transform: none;
+}
+
+/*
+ * Swiper 会给 .swiper-button-prev/next 加 ::after（内置箭头字体），
+ * 与小工具里的自定义箭头重叠，右侧按钮常会错位/挤出边框。
+ */
+.heb-qual-carousel__nav.swiper-button-prev::after,
+.heb-qual-carousel__nav.swiper-button-next::after {
+	display: none !important;
+	content: none !important;
+	width: 0 !important;
+	height: 0 !important;
+	margin: 0 !important;
+	font-size: 0 !important;
+}
+
+.heb-qual-carousel__nav {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	align-self: center;
+	width: 34px;
+	height: 46px;
+	min-height: 46px;
+	padding: 0;
+	border: 1px solid #ddd;
+	background: #efefef;
+	color: #666;
+	line-height: 0;
+	cursor: pointer;
+	transition: background 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.heb-qual-carousel__nav:hover:not(.swiper-button-disabled),
+.heb-qual-carousel__nav:focus-visible:not(.swiper-button-disabled) {
+	background: #e2e2e2;
+	color: #222;
+}
+
+.heb-qual-carousel__nav.swiper-button-disabled {
+	opacity: 0.35;
+	cursor: default;
+}
+
+/* Elementor Icons_Manager：SVG/字体图标在按钮内水平垂直居中 */
+.heb-qual-carousel__nav-icon-wrap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.heb-qual-carousel__nav-icon-wrap svg {
+	width: 22px;
+	height: 22px;
+	display: block;
+	flex-shrink: 0;
+}
+
+.heb-qual-carousel__nav-icon-wrap i {
+	display: block;
+	line-height: 1;
+}
+
+.heb-qual-carousel__placeholder {
+	display: block;
+	text-align: center;
+	color: #888;
+}
+
+.heb-qual-carousel__viewport {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.heb-qual-carousel__swiper {
+	width: 100%;
+	overflow: hidden;
+}
+
+.heb-qual-carousel__swiper .swiper-wrapper {
+	align-items: stretch;
+}
+
+.heb-qual-carousel__swiper .swiper-slide {
+	height: auto;
+	display: flex;
+}
+
+.heb-qual-carousel__slide-inner {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	background: #f6f6f6;
+	padding: 14px;
+}
+
+.heb-qual-carousel__figure {
+	margin: 0;
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.heb-qual-carousel__img-wrap {
+	background: #fff;
+	flex: 1 1 auto;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+}
+
+/* 高度由 Carousel → Slide image height（--heb-qual-slide-h）控制 */
+.heb-qual-carousel:not([data-heb-height-mode]) .heb-qual-carousel__img-wrap {
+	min-height: var(--heb-qual-slide-h, 230px);
+	height: auto;
+}
+
+.heb-qual-carousel[data-heb-height-mode='min'] .heb-qual-carousel__img-wrap {
+	min-height: var(--heb-qual-slide-h, 230px);
+	height: auto;
+}
+
+.heb-qual-carousel[data-heb-height-mode='fixed'] .heb-qual-carousel__img-wrap {
+	height: var(--heb-qual-slide-h, 230px);
+	min-height: 0;
+}
+
+.heb-qual-carousel__img {
+	display: block;
+	max-width: 100%;
+	width: auto;
+	height: auto;
+	object-fit: contain;
+}
+
+.heb-qual-carousel[data-heb-height-mode='fixed'] .heb-qual-carousel__img {
+	max-height: 100%;
+	max-width: 100%;
+	width: auto;
+	height: auto;
+}
+
+.heb-qual-carousel__caption {
+	margin: 10px 0 0;
+	padding: 0 4px;
+	text-align: center;
+	font-size: 13px;
+	line-height: 1.45;
+	color: #444;
+}
+
+.heb-qual-carousel__empty {
+	margin: 0;
+	padding: 16px;
+	background: #f6f7f7;
+	border: 1px dashed #ccc;
+	color: #555;
+	font-size: 14px;
+}
+
+@media (max-width: 767px) {
+	.heb-qual-carousel__row {
+		gap: 10px;
+	}
+
+	.heb-qual-carousel__row .heb-qual-carousel__nav.swiper-button-prev,
+	.heb-qual-carousel__row .heb-qual-carousel__nav.swiper-button-next {
+		width: 30px;
+		height: 40px;
+		min-height: 40px;
+	}
+
+	.heb-qual-carousel__caption {
+		font-size: 13px;
+		line-height: 1.45;
+	}
+}

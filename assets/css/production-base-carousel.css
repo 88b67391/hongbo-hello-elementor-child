@@ -1,0 +1,140 @@
+/**
+ * Production base image gallery — line pagination (Swiper)
+ */
+
+.heb-prod-base {
+	box-sizing: border-box;
+}
+
+.heb-prod-base *,
+.heb-prod-base *::before,
+.heb-prod-base *::after {
+	box-sizing: border-box;
+}
+
+.heb-prod-base__head {
+	margin: 0 0 20px;
+}
+
+.heb-prod-base__title {
+	margin: 0 0 10px;
+	padding: 0;
+	font-weight: 600;
+	color: #1a1a1a;
+}
+
+.heb-prod-base__title-line {
+	display: block;
+	width: 48px;
+	height: 2px;
+	background-color: #c8c8c8;
+}
+
+.heb-prod-base__title-line.is-hidden {
+	display: none;
+}
+
+.heb-prod-base__swiper {
+	width: 100%;
+	overflow: hidden;
+}
+
+.heb-prod-base__swiper .swiper-slide {
+	height: auto;
+}
+
+.heb-prod-base__slide-inner {
+	margin: 0;
+	overflow: hidden;
+	width: 100%;
+}
+
+.heb-prod-base__img-wrap {
+	position: relative;
+	width: 100%;
+	overflow: hidden;
+	background: #eee;
+}
+
+.heb-prod-base__img {
+	display: block;
+	width: 100%;
+	object-fit: cover;
+}
+
+/* --heb-prod-slide-h（Carousel → Slide image height） */
+.heb-prod-base:not([data-heb-height-mode]) .heb-prod-base__img-wrap {
+	height: var(--heb-prod-slide-h, 240px);
+	min-height: 0;
+}
+
+.heb-prod-base:not([data-heb-height-mode]) .heb-prod-base__img {
+	height: 100%;
+	min-height: 0;
+}
+
+.heb-prod-base[data-heb-height-mode='min'] .heb-prod-base__img-wrap {
+	min-height: var(--heb-prod-slide-h, 240px);
+	height: auto;
+}
+
+.heb-prod-base[data-heb-height-mode='min'] .heb-prod-base__img {
+	min-height: var(--heb-prod-slide-h, 240px);
+	height: auto;
+}
+
+.heb-prod-base[data-heb-height-mode='fixed'] .heb-prod-base__img-wrap {
+	height: var(--heb-prod-slide-h, 240px);
+	min-height: 0;
+}
+
+.heb-prod-base[data-heb-height-mode='fixed'] .heb-prod-base__img {
+	height: 100%;
+	min-height: 0;
+}
+
+.heb-prod-base__placeholder {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: inherit;
+	color: #888;
+	font-size: 13px;
+}
+
+.heb-prod-base .swiper-pagination.heb-prod-base__pagination {
+	position: static;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	margin-top: 20px;
+	padding-top: 4px;
+}
+
+.heb-prod-base .swiper-pagination-bullet {
+	flex: 0 0 auto;
+	width: 36px;
+	height: 3px;
+	margin: 0 !important;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	opacity: 1;
+	background-color: #dedede;
+	transition: background-color 0.2s ease;
+}
+
+.heb-prod-base .swiper-pagination-bullet-active {
+	background-color: #722f37;
+}
+
+.heb-prod-base__empty {
+	margin: 0;
+	padding: 16px;
+	background: #f6f7f7;
+	border: 1px dashed #ccc;
+	color: #555;
+	font-size: 14px;
+}

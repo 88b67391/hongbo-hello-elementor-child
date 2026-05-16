@@ -32,6 +32,9 @@ add_action( 'wp_enqueue_scripts', 'hello_elementor_child_enqueue_styles', 20 );
 
 /**
  * Register assets for custom Elementor widgets (gallery + sticky contact bar).
+ *
+ * 必须在 Elementor 之前完成 wp_register_style/script，否则编辑画布 iframe 里
+ * 小工具 get_style_depends() 触发的 enqueue 会发生在句柄注册之前，导致编辑器里无样式。
  */
 function hello_elementor_child_register_elementor_widget_assets() {
 	$base_dir = get_stylesheet_directory();
@@ -61,8 +64,23 @@ function hello_elementor_child_register_elementor_widget_assets() {
 
 	$cf_css = $base_dir . '/assets/css/acf-company-feedback.css';
 	wp_register_style( 'heb-acf-company-feedback', $base_uri . '/assets/css/acf-company-feedback.css', [], file_exists( $cf_css ) ? (string) filemtime( $cf_css ) : null );
+
+	$swiper_css = $base_dir . '/assets/vendor/swiper/swiper-bundle.min.css';
+	$swiper_js  = $base_dir . '/assets/vendor/swiper/swiper-bundle.min.js';
+	wp_register_style( 'heb-swiper', $base_uri . '/assets/vendor/swiper/swiper-bundle.min.css', [], file_exists( $swiper_css ) ? (string) filemtime( $swiper_css ) : '11.2.6' );
+	wp_register_script( 'heb-swiper', $base_uri . '/assets/vendor/swiper/swiper-bundle.min.js', [], file_exists( $swiper_js ) ? (string) filemtime( $swiper_js ) : '11.2.6', true );
+
+	$qc_css = $base_dir . '/assets/css/qualification-carousel.css';
+	$qc_js  = $base_dir . '/assets/js/qualification-carousel.js';
+	wp_register_style( 'heb-qualification-carousel', $base_uri . '/assets/css/qualification-carousel.css', [ 'heb-swiper' ], file_exists( $qc_css ) ? (string) filemtime( $qc_css ) : null );
+	wp_register_script( 'heb-qualification-carousel', $base_uri . '/assets/js/qualification-carousel.js', [ 'heb-swiper' ], file_exists( $qc_js ) ? (string) filemtime( $qc_js ) : null, true );
+
+	$pb_css = $base_dir . '/assets/css/production-base-carousel.css';
+	$pb_js  = $base_dir . '/assets/js/production-base-carousel.js';
+	wp_register_style( 'heb-production-base-carousel', $base_uri . '/assets/css/production-base-carousel.css', [ 'heb-swiper' ], file_exists( $pb_css ) ? (string) filemtime( $pb_css ) : null );
+	wp_register_script( 'heb-production-base-carousel', $base_uri . '/assets/js/production-base-carousel.js', [ 'heb-swiper' ], file_exists( $pb_js ) ? (string) filemtime( $pb_js ) : null, true );
 }
-add_action( 'wp_enqueue_scripts', 'hello_elementor_child_register_elementor_widget_assets', 15 );
+add_action( 'init', 'hello_elementor_child_register_elementor_widget_assets', 5 );
 
 /**
  * Register a dedicated Elementor category so widgets are easy to find (not only under “General / 常规”).
@@ -104,6 +122,8 @@ function hello_elementor_child_load_elementor_widget_classes() {
 	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-vertical-timeline.php';
 	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-acf-company-intro.php';
 	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-acf-customer-feedback.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-qualification-carousel.php';
+	require_once get_stylesheet_directory() . '/inc/elementor/class-widget-production-base-carousel.php';
 }
 
 /**
@@ -123,6 +143,8 @@ function hello_elementor_child_register_elementor_widgets( $widgets_manager ) {
 		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_Vertical_Timeline() );
 		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_ACF_Company_Intro() );
 		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_ACF_Customer_Feedback() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_Qualification_Carousel() );
+		$widgets_manager->register( new \HelloElementorChild\Elementor\Widget_Production_Base_Carousel() );
 	}
 }
 add_action( 'elementor/widgets/register', 'hello_elementor_child_register_elementor_widgets' );
@@ -154,6 +176,8 @@ function hello_elementor_child_register_elementor_widgets_legacy() {
 	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_Vertical_Timeline() );
 	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_ACF_Company_Intro() );
 	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_ACF_Customer_Feedback() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_Qualification_Carousel() );
+	$wm->register_widget_type( new \HelloElementorChild\Elementor\Widget_Production_Base_Carousel() );
 }
 add_action( 'elementor/widgets/widgets_registered', 'hello_elementor_child_register_elementor_widgets_legacy', 20 );
 
