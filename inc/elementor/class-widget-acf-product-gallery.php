@@ -196,11 +196,15 @@ class Widget_ACF_Product_Gallery extends Widget_Base {
 		foreach ( $images as $item ) {
 			$main  = $this->resolve_image( $item, $main_size );
 			$thumb = $this->resolve_image( $item, $thumb_size );
+			$full  = $this->resolve_image( $item, 'full' );
 			if ( '' === $main['url'] && '' !== $thumb['url'] ) {
 				$main = $thumb;
 			}
 			if ( '' === $thumb['url'] && '' !== $main['url'] ) {
 				$thumb = $main;
+			}
+			if ( '' === $full['url'] && '' !== $main['url'] ) {
+				$full = $main;
 			}
 			if ( '' === $main['url'] ) {
 				continue;
@@ -208,6 +212,7 @@ class Widget_ACF_Product_Gallery extends Widget_Base {
 			$resolved[] = [
 				'main'  => $main,
 				'thumb' => $thumb,
+				'full'  => $full,
 			];
 		}
 
@@ -221,28 +226,44 @@ class Widget_ACF_Product_Gallery extends Widget_Base {
 		}
 
 		$first = $resolved[0]['main'];
+		$first_full = $resolved[0]['full'];
 
 		$uid = 'heb-gal-' . $this->get_id();
 		?>
 		<div id="<?php echo esc_attr( $uid ); ?>" class="heb-acf-gallery" data-heb-acf-gallery>
 			<div class="heb-acf-gallery__stage">
-				<img
-					class="heb-acf-gallery__main"
-					src="<?php echo esc_url( $first['url'] ); ?>"
-					<?php if ( $first['srcset'] ) : ?>
-						srcset="<?php echo esc_attr( $first['srcset'] ); ?>"
-						sizes="<?php echo esc_attr( $first['sizes'] ); ?>"
-					<?php endif; ?>
-					alt="<?php echo esc_attr( $first['alt'] ); ?>"
-					loading="eager"
-					decoding="async"
-				/>
+				<button
+					type="button"
+					class="heb-acf-gallery__main-trigger"
+					aria-label="<?php echo esc_attr__( 'View larger product image', 'hello-elementor-child' ); ?>"
+					data-heb-gallery-open
+				>
+					<img
+						class="heb-acf-gallery__main"
+						src="<?php echo esc_url( $first['url'] ); ?>"
+						<?php if ( $first['srcset'] ) : ?>
+							srcset="<?php echo esc_attr( $first['srcset'] ); ?>"
+							sizes="<?php echo esc_attr( $first['sizes'] ); ?>"
+						<?php endif; ?>
+						<?php if ( $first_full['url'] ) : ?>
+							data-full-src="<?php echo esc_url( $first_full['url'] ); ?>"
+						<?php endif; ?>
+						<?php if ( $first_full['srcset'] ) : ?>
+							data-full-srcset="<?php echo esc_attr( $first_full['srcset'] ); ?>"
+							data-full-sizes="<?php echo esc_attr( $first_full['sizes'] ); ?>"
+						<?php endif; ?>
+						alt="<?php echo esc_attr( $first['alt'] ); ?>"
+						loading="eager"
+						decoding="async"
+					/>
+				</button>
 			</div>
 			<div class="heb-acf-gallery__thumbs" role="tablist" aria-label="<?php echo esc_attr__( 'Product images', 'hello-elementor-child' ); ?>">
 				<?php foreach ( $resolved as $i => $pair ) : ?>
 					<?php
 					$m = $pair['main'];
 					$t = $pair['thumb'];
+					$f = $pair['full'];
 					$is_active = ( 0 === $i );
 					?>
 					<button
@@ -256,6 +277,11 @@ class Widget_ACF_Product_Gallery extends Widget_Base {
 							data-main-sizes="<?php echo esc_attr( $m['sizes'] ); ?>"
 						<?php endif; ?>
 						data-main-alt="<?php echo esc_attr( $m['alt'] ); ?>"
+						data-full-src="<?php echo esc_url( $f['url'] ); ?>"
+						<?php if ( $f['srcset'] ) : ?>
+							data-full-srcset="<?php echo esc_attr( $f['srcset'] ); ?>"
+							data-full-sizes="<?php echo esc_attr( $f['sizes'] ); ?>"
+						<?php endif; ?>
 					>
 						<img
 							src="<?php echo esc_url( $t['url'] ); ?>"

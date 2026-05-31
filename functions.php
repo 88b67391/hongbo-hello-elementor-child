@@ -12,9 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once get_stylesheet_directory() . '/inc/import-cs-products.php';
 require_once get_stylesheet_directory() . '/inc/disable-elementor-updates.php';
 require_once get_stylesheet_directory() . '/inc/class-theme-updater.php';
-if ( is_admin() ) {
-	require_once get_stylesheet_directory() . '/inc/admin-seed-products.php';
-}
 Hello_Elementor_Child_Theme_Updater::instance();
 
 /**
